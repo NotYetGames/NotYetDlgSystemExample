@@ -1,0 +1,4 @@
+[submodule "Plugins/DlgSystem"]
+	path = Plugins/DlgSystem
+	url = https://gitlab.com/NotYetGames/DlgSystem.git
+	branch = 4.22
