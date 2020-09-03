@@ -9,4 +9,16 @@ See the [Wiki](https://gitlab.com/NotYetGames/DlgSystem/wikis/home) for the manu
 
 ## Clone
 
-TODO
+**WARNING** if you don't clone like this the Plugin submodule won't be downloaded
+
+```sh
+git clone --recurse-submodules -j 2 -b 4.22 https://gitlab.com/NotYetGames/NotYetDlgSystemExample.git
+```
+
+---
+**If you cloned without the submodules**:
+
+```sh
+cd NotYetDlgSystemExample
+git submodule update --init --recursive
+```
