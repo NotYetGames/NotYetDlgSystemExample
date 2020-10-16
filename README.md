@@ -1,8 +1,10 @@
-# Not Yet Dialogue System Plugin Example Project
+# Not Yet: Dialogue System Plugin - Example Project
 
 Branch Unreal version: `4.24`
 
-Example project for the [DlgSystem](https://gitlab.com/NotYetGames/DlgSystem/tree/4.24) plugin.
+Github Mirror: [HERE](https://github.com/NotYetGames/NotYetDlgSystemExample)
+
+Example project for the [DlgSystem](https://gitlab.com/NotYetGames/DlgSystem/) plugin.
 
 **See the [Wiki](https://gitlab.com/NotYetGames/DlgSystem/wikis/home) for the manual and tutorials.**
 
