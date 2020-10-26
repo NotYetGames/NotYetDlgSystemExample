@@ -12,6 +12,8 @@ Example project for the [DlgSystem](https://gitlab.com/NotYetGames/DlgSystem/) p
 
 ### 1. [Setup Visual Studio for Unreal Engine](https://docs.unrealengine.com/en-US/Programming/Development/VisualStudioSetup/index.html)
 
+👉 [Visual Studio Install Link](https://visualstudio.microsoft.com/vs/)
+
 To add C++ tools to your VS installation, make sure you select **Game development with C++** under Workloads.
 
 ![Settings Installer for VS](/Docs/images/VS2017_SettingsInstaller.jpg)
