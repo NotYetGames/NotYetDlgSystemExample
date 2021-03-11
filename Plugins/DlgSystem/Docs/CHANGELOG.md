@@ -1,3 +1,61 @@
+# v13
+**Date:** March 11, 2021
+### Deprecations
+
+Deprecated the following functions, because they were hard to use in BP in favour of variants that are easier to use.
+
+This was done because using Arrays/Sets reference in BP can lead to some weird bugs.
+
+- **Dialogue Manager**
+  - `GetAllDialoguesParticipantNames` -> `GetDialoguesParticipantNames`
+  - `GetAllDialoguesSpeakerStates` -> `GetDialoguesSpeakerStates`
+  - `GetAllDialoguesIntNames` -> `GetDialoguesParticipantIntNames`
+  - `GetAllDialoguesFloatNames` -> `GetDialoguesParticipantFloatNames`
+  - `GetAllDialoguesBoolNames` -> `GetDialoguesParticipantBoolNames`
+  - `GetAllDialoguesNameNames` -> `GetDialoguesParticipantFNameNames`
+  - `GetAllDialoguesConditionNames` -> `GetDialoguesParticipantConditionNames`
+  - `GetAllDialoguesEventNames` -> `GetDialoguesParticipantEventNames`
+  - `GetAllObjectsWithDialogueParticipantInterface` -> `GetObjectsWithDialogueParticipantInterface`
+  - `GetAllObjectsMapWithDialogueParticipantInterface` -> `GetObjectsMapWithDialogueParticipantInterface`
+- **Dialogue Asset**
+  - `GetAllParticipantNames` -> `GetParticipantNames`
+  - `GetAllParticipantClasses` -> `GetParticipantClasses`
+  - `GetAllSpeakerStates` -> `GetSpeakerStates`
+  - `GetConditions` -> `GetParticipantConditionNames`
+  - `GetEvents` -> `GetParticipantEventNames`
+  - `GetCustomEvents` -> `GetParticipantCustomEvents`
+  - `GetIntNames` -> `GetParticipantIntNames`
+  - `GetBoolNames` -> `GetParticipantBoolNames`
+  - `GetNameNames` -> `GetParticipantFNameNames`
+  - `GetFloatNames` -> `GetParticipantFloatNames`
+  - `GetClassIntNames` -> `GetParticipantClassIntNames`
+  - `GetClassFloatNames` -> `GetParticipantClassFloatNames`
+  - `GetClassBoolNames` -> `GetParticipantClassBoolNames`
+  - `GetClassNameNames` -> `GetParticipantClassFNameNames`
+  - `GetClassTextNames` -> `GetParticipantClassFTextNames`
+
+### Add the following functions
+- **Dialogue Asset**
+  - `GetParticipantCustomConditions`
+  - `GetParticipantCustomTextArguments`
+
+### Blueprint
+
+- Do not refresh pins if the Blueprint is not fully loaded
+	- This stops refreshing the pins automatically on startup because it is not reliable (this happened all the time if the participant is inherited from another blueprint)
+	- This change basically makes the refreshing of the pin names to be explicit (by the user) rather than implicit.
+- Use wildcard pins for all Dialogue Select Nodes
+### Bug fixes
+
+- **Fixed** the `FDlgJsonWriter` so that it works in `Shipping` builds
+- **Fixed** Linux compilation for UE `4.26`
+
+# v12.3
+**Date:** December 3, 2020
+
+- **Transfer** `EnterConditions` and `EnterEvents` from first node when convert speech nodes to speech sequence
+- **Added** support for **UE 4.26**
+
 # v12.2
 **Date:** November 30, 2020
 
