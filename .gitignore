@@ -77,3 +77,5 @@ DerivedDataCacheLocal/*
 Packaged/*
 Tools
 Content/StarterContent/*
+.vscode/
+*.code-workspace
