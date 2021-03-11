@@ -6,6 +6,7 @@
 #include "EdGraph/EdGraphNode.h"
 #include "Engine/Font.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 #if ENGINE_MINOR_VERSION >= 24
 #include "ToolMenu.h"
@@ -363,7 +364,7 @@ bool UDialogueGraphNode::HasVoicePropertiesSet() const
 	// Speech sequence node
 	if (IsSpeechSequenceNode())
 	{
-		for (const FDlgSpeechSequenceEntry Sequence : GetDialogueNode<UDlgNode_SpeechSequence>().GetNodeSpeechSequence())
+		for (const FDlgSpeechSequenceEntry& Sequence : GetDialogueNode<UDlgNode_SpeechSequence>().GetNodeSpeechSequence())
 		{
 			if (Sequence.VoiceSoundWave != nullptr || Sequence.VoiceDialogueWave != nullptr)
 			{
@@ -391,7 +392,7 @@ bool UDialogueGraphNode::HasGenericDataSet() const
 	// Speech sequence node
 	if (IsSpeechSequenceNode())
 	{
-		for (const FDlgSpeechSequenceEntry Sequence : GetDialogueNode<UDlgNode_SpeechSequence>().GetNodeSpeechSequence())
+		for (const FDlgSpeechSequenceEntry& Sequence : GetDialogueNode<UDlgNode_SpeechSequence>().GetNodeSpeechSequence())
 		{
 			if (Sequence.GenericData != nullptr)
 			{
