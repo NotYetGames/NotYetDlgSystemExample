@@ -94,11 +94,11 @@ TSharedPtr<SDockTab> FDlgHelper::InvokeTab(TSharedPtr<FTabManager> TabManager, c
 		return nullptr;
 	}
 
-#if ENGINE_MINOR_VERSION >= 26
+#if NY_ENGINE_VERSION >= 426
 	return TabManager->TryInvokeTab(TabID);
 #else
 	return TabManager->InvokeTab(TabID);
-#endif // ENGINE_MINOR_VERSION >= 26
+#endif
 }
 
 FString FDlgHelper::CleanObjectName(FString Name)

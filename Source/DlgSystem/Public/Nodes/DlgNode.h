@@ -59,7 +59,7 @@ public:
 
 	/**
 	 * This alternate version of PostEditChange is called when properties inside structs are modified.  The property that was actually modified
-	 * is located at the tail of the list.  The head of the list of the FNYStructProperty member variable that contains the property that was modified.
+	 * is located at the tail of the list.  The head of the list of the FStructProperty member variable that contains the property that was modified.
 	 */
 	void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 
@@ -87,7 +87,9 @@ public:
 	virtual bool CheckNodeEnterConditions(const UDlgContext& Context, TSet<const UDlgNode*> AlreadyVisitedNodes) const;
 	bool HasAnySatisfiedChild(const UDlgContext& Context, TSet<const UDlgNode*> AlreadyVisitedNodes) const;
 
-	virtual bool OptionSelected(int32 OptionIndex, UDlgContext& Context);
+	// if bFromAll = true it uses all the options (even unsatisfied)
+	// if bFromAll = false it only uses the satisfied options.
+	virtual bool OptionSelected(int32 OptionIndex, bool bFromAll, UDlgContext& Context);
 
 	//
 	// Getters/Setters:

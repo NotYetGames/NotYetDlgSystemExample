@@ -13,6 +13,7 @@ class UDlgSystemSettings;
 class UDlgContext;
 class UDlgNode;
 class UDlgDialogue;
+class UDlgNodeData;
 
 /**
  * The representation of a child in a node. Defined by a TargetIndex which points to the index array in the Dialogue.Nodes
@@ -33,11 +34,11 @@ public:
 	bool operator==(const FDlgEdge& Other) const
 	{
 		return TargetIndex == Other.TargetIndex &&
-            SpeakerState == Other.SpeakerState &&
-            Text.EqualTo(Other.Text) &&
-            bIncludeInAllOptionListIfUnsatisfied == Other.bIncludeInAllOptionListIfUnsatisfied &&
-            TextArguments == Other.TextArguments &&
-            Conditions == Other.Conditions;
+			SpeakerState == Other.SpeakerState &&
+			Text.EqualTo(Other.Text) &&
+			bIncludeInAllOptionListIfUnsatisfied == Other.bIncludeInAllOptionListIfUnsatisfied &&
+			TextArguments == Other.TextArguments &&
+			Conditions == Other.Conditions;
 	}
 
 	bool operator!=(const FDlgEdge& Other) const
@@ -103,6 +104,8 @@ public:
 	// Returns if the Edge is valid, has the TargetIndex non negative
 	bool IsValid() const { return TargetIndex > INDEX_NONE; }
 
+	UDlgNodeData* GetEdgeData() const { return EdgeData; }
+
 	static const FDlgEdge& GetInvalidEdge()
 	{
 		static FDlgEdge DlgEdge;
@@ -112,6 +115,7 @@ public:
 	// Helper functions to get the names of some properties. Used by the DlgSystemEditor module.
 	static FName GetMemberNameText() { return GET_MEMBER_NAME_CHECKED(FDlgEdge, Text); }
 	static FName GetMemberNameTextArguments() { return GET_MEMBER_NAME_CHECKED(FDlgEdge, TextArguments); }
+	static FName GetMemberNameEdgeData() { return GET_MEMBER_NAME_CHECKED(FDlgEdge, EdgeData); }
 
 public:
 	// Index of the node in the Nodes TArray of the dialogue this edge is leading to
@@ -137,6 +141,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Dialogue|Edge", Meta = (MultiLine = true))
 	FText Text;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Dialogue|Edge")
+	UDlgNodeData* EdgeData = nullptr;
+
 	// If you want replaceable portions inside your Text nodes just add {identifier} inside it and set the value it should have at runtime.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, EditFixedSize, Category = "Dialogue|Edge")
 	TArray<FDlgTextArgument> TextArguments;
@@ -151,5 +158,5 @@ struct TStructOpsTypeTraits<FDlgEdge> : public TStructOpsTypeTraitsBase2<FDlgEdg
 	enum
 	{
 		WithIdenticalViaEquality = true
-    };
+	};
 };
