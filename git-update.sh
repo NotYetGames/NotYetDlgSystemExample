@@ -7,5 +7,5 @@ git pull --verbose
 
 # Update subtree
 git subtree pull \
-    --prefix Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git 4.25 \
+    --prefix Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git master \
     --squash --message "Update Dialogue Plugin"

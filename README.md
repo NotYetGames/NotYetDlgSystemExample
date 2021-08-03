@@ -51,8 +51,8 @@ git clone -b 4.25 https://gitlab.com/NotYetGames/NotYetDlgSystemExample.git
 
 # Push subtree modifications
 # NOTE: This is only if you modified the Plugins/DlgSystem subtree.
-git subtree push --prefix=Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git 4.25
+git subtree push --prefix=Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git master
 
 # Was added with
-git subtree add --prefix Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git 4.25 --squash
+git subtree add --prefix Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git master --squash
 ```
