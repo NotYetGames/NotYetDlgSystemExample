@@ -8,16 +8,16 @@
 #include "UObject/ObjectMacros.h"
 #include <functional>
 
-
-
 #include "DlgCondition.h"
 #include "DlgEvent.h"
-#include "NYReflectionTypes.h"
+#include "NYEngineVersionHelpers.h"
 
 #include "DlgHelper.generated.h"
 
+class SDockTab;
+class FTabManager;
+struct FTabId;
 class UDlgSystemSettings;
-
 
 USTRUCT()
 struct FDlgClassAndObject
@@ -37,7 +37,7 @@ class FDlgConstScriptArrayHelper : public FScriptArrayHelper
 	typedef FScriptArrayHelper Super;
 	typedef FDlgConstScriptArrayHelper Self;
 public:
-	FORCEINLINE FDlgConstScriptArrayHelper(const FNYArrayProperty* InProperty, const void *InArray)
+	FORCEINLINE FDlgConstScriptArrayHelper(const FArrayProperty* InProperty, const void *InArray)
 		: Super(InProperty, InArray) {}
 
 	FORCEINLINE const uint8* GetConstRawPtr(int32 Index = 0) const
@@ -54,7 +54,7 @@ class FDlgConstScriptMapHelper : public FScriptMapHelper
 	typedef FDlgConstScriptMapHelper Self;
 public:
 
-	FORCEINLINE FDlgConstScriptMapHelper(const FNYMapProperty* InProperty, const void* InMap)
+	FORCEINLINE FDlgConstScriptMapHelper(const FMapProperty* InProperty, const void* InMap)
 		: Super(InProperty, InMap) {}
 
 
@@ -234,6 +234,15 @@ public:
 		}
 		return Object->GetClass()->GetName();
 	}
+
+	/**
+	 * Try to open tab if it is closed at the last known location.  If it already exists, it will draw attention to the tab.
+	 *
+	 * @param TabManager The TabManager.
+	 * @param TabId The tab identifier.
+	 * @return The existing or newly spawned tab instance if successful.
+	 */
+	static TSharedPtr<SDockTab> InvokeTab(TSharedPtr<FTabManager> TabManager, const FTabId& TabID);
 
 	// Removes _C from the end of the Name
 	// And removes the .extension from the path names

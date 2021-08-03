@@ -6,6 +6,7 @@
 
 #include "Engine/DeveloperSettings.h"
 #include "Layout/Margin.h"
+#include "NYEngineVersionHelpers.h"
 
 #include "Logging/INYLogger.h"
 
@@ -23,7 +24,7 @@ enum class EDlgDialogueTextFormat : uint8
 	None	UMETA(DisplayName = "No Text Format"),
 
 	// Output all text formats, mostly used for debugging
-	All     UMETA(Hidden),
+	All	 UMETA(Hidden),
 
 	// DEPRECATED. The own Dialogue Text format. DEPRECATED.
 	// NOTE: this format is deprecated AND in the next version it will be removed
@@ -109,10 +110,10 @@ enum class EDlgClassPickerDisplayMode : uint8
 	DefaultView,
 
 	// Displays all classes as a tree.
-    TreeView,
+	TreeView,
 
-    // Displays all classes as a list.
-    ListView
+	// Displays all classes as a list.
+	ListView
 };
 
 // UDeveloperSettings classes are auto discovered https://wiki.unrealengine.com/CustomSettings
@@ -142,11 +143,7 @@ public:
 	bool SupportsAutoRegistration() const override { return true; }
 
 	// UObject interface
-#if ENGINE_MINOR_VERSION >= 25
 	bool CanEditChange(const FProperty* InProperty) const override;
-#else
-	bool CanEditChange(const UProperty* InProperty) const override;
-#endif
 
 	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif // WITH_EDITOR
@@ -253,6 +250,10 @@ public:
 	// Shows the NodeData that you can customize yourself
 	UPROPERTY(Category = "Dialogue Node Data", Config, EditAnywhere)
 	bool bShowNodeData = true;
+
+	// Shows the EdgeData that you can customize yourself
+	UPROPERTY(Category = "Dialogue Edge Data", Config, EditAnywhere)
+	bool bShowEdgeData = true;
 
 	// Where to display the SpeakerState FName property
 	UPROPERTY(Category = "Dialogue Node Data", Config, EditAnywhere, DisplayName = "SpeakerState Visibility")
