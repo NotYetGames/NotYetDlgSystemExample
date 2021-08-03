@@ -46,12 +46,6 @@ void SDialogueGraphNode_Edge::OnMouseLeave(const FPointerEvent& MouseEvent)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Begin SNodePanel::SNode Interface
-void SDialogueGraphNode_Edge::MoveTo(const FVector2D& NewPosition, FNodeSet& NodeFilter)
-{
-	// Ignored; position is set by the location of the attached nodes
-	Super::MoveTo(NewPosition, NodeFilter);
-}
-
 void SDialogueGraphNode_Edge::PerformSecondPassLayout(const TMap<UObject*, TSharedRef<SNode>>& NodeToWidgetLookup) const
 {
 	// Find the geometry of the nodes we're connecting
@@ -150,7 +144,7 @@ void SDialogueGraphNode_Edge::UpdateGraphNode()
 		[
 			SNew(SOverlay)
 
-#if ENGINE_MINOR_VERSION >= 24
+#if NY_ENGINE_VERSION >= 424
 			// >= 4.24
 			+SOverlay::Slot()
 			[
@@ -185,7 +179,7 @@ void SDialogueGraphNode_Edge::UpdateGraphNode()
 				SNew(SImage)
 				.Image(FEditorStyle::GetBrush("Graph.TransitionNode.Gloss"))
 			]
-#endif // ENGINE_MINOR_VERSION >= 24
+#endif // NY_ENGINE_VERSION >= 424
 		];
 }
 //  End SGraphNode Interface

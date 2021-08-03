@@ -64,18 +64,18 @@ public:
 		// PrevIfNotStatement = null
 		//
 		// for Option in Options:
-		//    OptionValue = Value of Option
-		//    CallConditionFunctionStatement = AddStatement `BoolTerm = ConditionFunction(IndexValue, OptionValue)`
+		//	OptionValue = Value of Option
+		//	CallConditionFunctionStatement = AddStatement `BoolTerm = ConditionFunction(IndexValue, OptionValue)`
 		//
-		//    // where the previous statement jumps if it fails
-		//    if PrevIfNotStatement is not null:
-		//       PrevIfNotStatement.JumpTarget = CallConditionFunctionStatement
+		//	// where the previous statement jumps if it fails
+		//	if PrevIfNotStatement is not null:
+		//	   PrevIfNotStatement.JumpTarget = CallConditionFunctionStatement
 		//
-		//    // the target is set above
-		//    IfNotStatement = AddStatement `GoToTargetIfNot(BoolTerm, JumpTarget=null)`
+		//	// the target is set above
+		//	IfNotStatement = AddStatement `GoToTargetIfNot(BoolTerm, JumpTarget=null)`
 		//
-		//    // Add return option for this Option
-		//    AddStatement `ReturnValue = OptionValue`
+		//	// Add return option for this Option
+		//	AddStatement `ReturnValue = OptionValue`
 		//
 		//   PrevIfNotStatement = IfNotStatement
 		//   // add some goto statements that allows us to to safely exit the loop
@@ -500,7 +500,7 @@ UFunction* UDialogueK2Node_Select::GetConditionalFunction()
 	// The IndexPin (select by type)  is always an String (FName), so only use that
 	const FName FunctionName = GET_FUNCTION_NAME_CHECKED(UKismetMathLibrary, EqualEqual_NameName);
 
-#if ENGINE_MINOR_VERSION >= 25
+#if NY_ENGINE_VERSION >= 425
 	return FindUField<UFunction>(UKismetMathLibrary::StaticClass(), FunctionName);
 #else
 	return FindField<UFunction>(UKismetMathLibrary::StaticClass(), FunctionName);
