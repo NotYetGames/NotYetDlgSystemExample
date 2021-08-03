@@ -53,7 +53,7 @@ bool UDlgContext::ChooseOption(int32 OptionIndex)
 	check(Dialogue);
 	if (UDlgNode* Node = GetMutableActiveNode())
 	{
-		if (Node->OptionSelected(OptionIndex, *this))
+		if (Node->OptionSelected(OptionIndex, false, *this))
 		{
 			return true;
 		}
@@ -68,7 +68,7 @@ bool UDlgContext::ChooseSpeechSequenceOptionFromReplicated(int32 OptionIndex)
 	check(Dialogue);
 	if (UDlgNode_SpeechSequence* Node = GetMutableActiveNodeAsSpeechSequence())
 	{
-		if (Node->OptionSelectedFromReplicated(OptionIndex, *this))
+		if (Node->OptionSelectedFromReplicated(OptionIndex, false, *this))
 		{
 			return true;
 		}
@@ -78,31 +78,23 @@ bool UDlgContext::ChooseSpeechSequenceOptionFromReplicated(int32 OptionIndex)
 	return false;
 }
 
-bool UDlgContext::ChooseOptionBasedOnAllOptionIndex(int32 Index)
+bool UDlgContext::ChooseOptionFromAll(int32 Index)
 {
 	if (!AllChildren.IsValidIndex(Index))
 	{
-		LogErrorWithContext(FString::Printf(TEXT("ChooseOptionBasedOnAllOptionIndex - INVALID given Index = %d"), Index));
+		LogErrorWithContext(FString::Printf(TEXT("ChooseOptionFromAll - INVALID given Index = %d"), Index));
 		bDialogueEnded = true;
 		return false;
 	}
 
-	if (!AllChildren[Index].IsSatisfied())
+	if (UDlgNode* Node = GetMutableActiveNode())
 	{
-		LogErrorWithContext(FString::Printf(TEXT("ChooseOptionBasedOnAllOptionIndex - given Index = %d is an unsatisfied edge"), Index));
-		bDialogueEnded = true;
-		return false;
-	}
-
-	for (int32 i = 0; i < AvailableChildren.Num(); ++i)
-	{
-		if (AvailableChildren[i] == AllChildren[Index].GetEdge())
+		if (Node->OptionSelected(Index, true, *this))
 		{
-			return ChooseOption(i);
+			return true;
 		}
 	}
 
-	ensure(false);
 	bDialogueEnded = true;
 	return false;
 }
@@ -208,7 +200,7 @@ FName UDlgContext::GetOptionSpeakerStateFromAll(int32 Index) const
 const FDlgEdgeData& UDlgContext::GetOptionFromAll(int32 Index) const
 {
 	check(Dialogue);
-	if (!AvailableChildren.IsValidIndex(Index))
+	if (!AllChildren.IsValidIndex(Index))
 	{
 		LogErrorWithContext(FString::Printf(TEXT("GetOptionFromAll - INVALID given Index = %d"), Index));
 		return FDlgEdgeData::GetInvalidEdge();
@@ -851,10 +843,10 @@ bool UDlgContext::ValidateParticipantForDialogue(
 			return false;
 
 		// case EDlgValidateStatus::DialogueDoesNotContainParticipant:
-	 //        FDlgLogger::Get().Errorf(
-	 //            TEXT("%s - Participant Path = `%s` with ParticipantName = `%s` is NOT referenced (DOES) not exist inside the Dialogue.\nContext:\n\tDialogue = `%s`"),
-	 //            *ContextString, *Participant->GetPathName(), *IDlgDialogueParticipant::Execute_GetParticipantName(Participant).ToString(), *Dialogue->GetPathName()
-	 //        );
+	 //		FDlgLogger::Get().Errorf(
+	 //			TEXT("%s - Participant Path = `%s` with ParticipantName = `%s` is NOT referenced (DOES) not exist inside the Dialogue.\nContext:\n\tDialogue = `%s`"),
+	 //			*ContextString, *Participant->GetPathName(), *IDlgDialogueParticipant::Execute_GetParticipantName(Participant).ToString(), *Dialogue->GetPathName()
+	 //		);
 		// 	return false;
 
 		default:

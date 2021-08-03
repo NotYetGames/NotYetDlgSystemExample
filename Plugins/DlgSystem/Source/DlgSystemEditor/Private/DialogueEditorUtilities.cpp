@@ -684,7 +684,7 @@ void FDialogueEditorUtilities::CloseOtherEditors(UObject* Asset, IAssetEditorIns
 		return;
 	}
 
-#if ENGINE_MINOR_VERSION >= 24
+#if NY_ENGINE_VERSION >= 424
 	GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseOtherEditors(Asset, OnlyEditor);
 #else
 	FAssetEditorManager::Get().CloseOtherEditors(Asset, OnlyEditor);
@@ -698,7 +698,7 @@ bool FDialogueEditorUtilities::OpenEditorForAsset(const UObject* Asset)
 		return false;
 	}
 
-#if ENGINE_MINOR_VERSION >= 24
+#if NY_ENGINE_VERSION >= 424
 	return GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(const_cast<UObject*>(Asset));
 #else
 	return FAssetEditorManager::Get().OpenEditorForAsset(const_cast<UObject*>(Asset));
@@ -712,7 +712,7 @@ IAssetEditorInstance* FDialogueEditorUtilities::FindEditorForAsset(UObject* Asse
 		return nullptr;
 	}
 
-#if ENGINE_MINOR_VERSION >= 24
+#if NY_ENGINE_VERSION >= 424
 	return GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->FindEditorForAsset(Asset, bFocusIfOpen);
 #else
 	return FAssetEditorManager::Get().FindEditorForAsset(Asset, bFocusIfOpen);
@@ -965,10 +965,10 @@ bool FDialogueEditorUtilities::PickChildrenOfClass(const FText& TitleText, UClas
 }
 
 bool FDialogueEditorUtilities::OpenBlueprintEditor(
-    UBlueprint* Blueprint,
-    EDialogueBlueprintOpenType OpenType,
-    FName FunctionNameToOpen,
-    bool bForceFullEditor,
+	UBlueprint* Blueprint,
+	EDialogueBlueprintOpenType OpenType,
+	FName FunctionNameToOpen,
+	bool bForceFullEditor,
 	bool bAddBlueprintFunctionIfItDoesNotExist
 )
 {
@@ -989,14 +989,14 @@ bool FDialogueEditorUtilities::OpenBlueprintEditor(
 		if (OpenType == EDialogueBlueprintOpenType::Function)
 		{
 			ObjectToFocusOn = bAddBlueprintFunctionIfItDoesNotExist
-                ? BlueprintGetOrAddFunction(Blueprint, FunctionNameToOpen, Class)
-                : BlueprintGetFunction(Blueprint, FunctionNameToOpen, Class);
+				? BlueprintGetOrAddFunction(Blueprint, FunctionNameToOpen, Class)
+				: BlueprintGetFunction(Blueprint, FunctionNameToOpen, Class);
 		}
 		else if (OpenType == EDialogueBlueprintOpenType::Event)
 		{
 			ObjectToFocusOn = bAddBlueprintFunctionIfItDoesNotExist
-                ? BlueprintGetOrAddEvent(Blueprint, FunctionNameToOpen, Class)
-                : BlueprintGetEvent(Blueprint, FunctionNameToOpen, Class);
+				? BlueprintGetOrAddEvent(Blueprint, FunctionNameToOpen, Class)
+				: BlueprintGetEvent(Blueprint, FunctionNameToOpen, Class);
 		}
 	}
 
