@@ -1,6 +1,6 @@
 # Not Yet: Dialogue Plugin System - Example Project
 
-Branch Unreal version: `4.26`
+Branch Unreal version: `4.27`
 
 Github Mirror: [HERE](https://github.com/NotYetGames/NotYetDlgSystemExample)
 
@@ -41,7 +41,7 @@ you can just delete the `Plugins` folder from the example project.
 ## Clone
 
 ```sh
-git clone -b 4.26 https://gitlab.com/NotYetGames/NotYetDlgSystemExample.git
+git clone -b 4.27 https://gitlab.com/NotYetGames/NotYetDlgSystemExample.git
 ```
 
 ## Git commands
