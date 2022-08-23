@@ -15,7 +15,12 @@
 void UDlgNode::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
-	if (Ar.UE4Ver() >= VER_UE4_COOKED_ASSETS_IN_EDITOR_SUPPORT)
+#if NY_ENGINE_VERSION >= 500
+	const auto CurrentVersion = Ar.UEVer();
+#else
+	const auto CurrentVersion = Ar.UE4Ver();
+#endif
+	if (CurrentVersion >= VER_UE4_COOKED_ASSETS_IN_EDITOR_SUPPORT)
 	{
 		// NOTE: This modifies the Archive
 		// DO NOT REMOVE THIS
@@ -178,11 +183,22 @@ bool UDlgNode::ReevaluateChildren(UDlgContext& Context, TSet<const UDlgNode*> Al
 	// no child, but no end node?
 	if (AvailableOptions.Num() == 0)
 	{
-		FDlgLogger::Get().Errorf(
-			TEXT("ReevaluateChildren (ReevaluateOptions) - no valid child option for a NODE.\nContext:\n\t%s"),
-			*Context.GetContextString()
-		);
-		return false;
+		switch (GetDefault<UDlgSystemSettings>()->NoSatisfiedChildBehavior)
+		{
+			case EDlgNoSatisfiedChildBehavior::PrintErrorAndEndDialogue:
+				FDlgLogger::Get().Errorf(
+					TEXT("ReevaluateChildren (ReevaluateOptions) - no valid child option for a NODE.\nContext:\n\t%s"),
+					*Context.GetContextString());
+
+			case EDlgNoSatisfiedChildBehavior::EndDialogue:
+				return false;
+
+			case EDlgNoSatisfiedChildBehavior::ContinueDialogue:
+				return true;
+
+			default:
+				check(false);
+		}
 	}
 
 	return true;
@@ -200,6 +216,30 @@ bool UDlgNode::CheckNodeEnterConditions(const UDlgContext& Context, TSet<const U
 	{
 		return false;
 	}
+
+	switch (EnterRestriction)
+	{
+		case EDlgEntryRestriction::None:
+			break;
+
+		case EDlgEntryRestriction::OncePerContext:
+			if (Context.IsNodeVisited(Context.GetNodeIndexForGUID(NodeGUID), NodeGUID, true))
+			{
+				return false;
+			}
+			break;
+
+		case EDlgEntryRestriction::Once:
+			if (Context.IsNodeVisited(Context.GetNodeIndexForGUID(NodeGUID), NodeGUID, false))
+			{
+				return false;
+			}
+			break;
+
+		default:
+			break;
+	}
+
 	if (!bCheckChildrenOnEvaluation)
 	{
 		return true;

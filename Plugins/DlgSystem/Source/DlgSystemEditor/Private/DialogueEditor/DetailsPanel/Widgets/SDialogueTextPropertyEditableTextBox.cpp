@@ -1,5 +1,5 @@
 // Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
-#include "SDialogueTextPropertyEditableTextBox.h"
+#include "DialogueEditor/DetailsPanel/Widgets/SDialogueTextPropertyEditableTextBox.h"
 #include "Internationalization/TextNamespaceUtil.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Images/SImage.h"
@@ -21,6 +21,7 @@
 #include "Internationalization/StringTableRegistry.h"
 #include "Serialization/TextReferenceCollector.h"
 #include "DlgLocalizationHelper.h"
+#include "NYEngineVersionHelpers.h"
 
 #define LOCTEXT_NAMESPACE "STextPropertyEditableTextBox"
 
@@ -482,7 +483,12 @@ FText SDialogueTextPropertyEditableTextBox::GetToolTipText() const
 		{
 			FName TableId;
 			FString Key;
+
+#if NY_ENGINE_VERSION >= 500
+			FTextInspector::GetTableIdAndKey(TextValue, TableId, Key);
+#else
 			FStringTableRegistry::Get().FindTableIdAndKey(TextValue, TableId, Key);
+#endif
 
 			LocalizedTextToolTip = FText::Format(
 				LOCTEXT("StringTableTextToolTipFmt", "--- String Table Reference ---\nTable ID: {0}\nKey: {1}"),
@@ -498,7 +504,18 @@ FText SDialogueTextPropertyEditableTextBox::GetToolTipText() const
 
 			if (SourceString && TextValue.ShouldGatherForLocalization())
 			{
+#if NY_ENGINE_VERSION >= 500
+				const FTextId TextId = FTextInspector::GetTextId(TextValue);
+				bIsLocalized = !TextId.IsEmpty();
+				if (bIsLocalized)
+				{
+					Namespace = TextId.GetNamespace().GetChars();
+					Key = TextId.GetKey().GetChars();
+				}
+#else
 				bIsLocalized = FTextLocalizationManager::Get().FindNamespaceAndKeyFromDisplayString(FTextInspector::GetSharedDisplayString(TextValue), Namespace, Key);
+#endif
+
 			}
 
 			if (bIsLocalized)

@@ -92,7 +92,13 @@ FReply SDialogueGraphPin::OnMouseMove(const FGeometry& MyGeometry, const FPointe
 
 void SDialogueGraphPin::OnMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
-	if (!bIsHovered && GraphPinObj && !GraphPinObj->IsPendingKill() && GraphPinObj->GetOuter())
+#if NY_ENGINE_VERSION >= 500
+	const bool bLocalIsHovered = IsHovered();
+#else
+	const bool bLocalIsHovered = bIsHovered;
+#endif
+
+	if (!bLocalIsHovered && GraphPinObj && !GraphPinObj->IsPendingKill() && GraphPinObj->GetOuter())
 	{
 		TSharedPtr<SGraphPanel> OwnerPanelPtr = OwnerNodePtr.Pin()->GetOwnerPanel();
 		check(OwnerPanelPtr.IsValid());
@@ -154,6 +160,31 @@ FReply SDialogueGraphPin::OnDragOver(const FGeometry& MyGeometry, const FDragDro
 FReply SDialogueGraphPin::OnDrop(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)
 {
 	return Super::OnDrop(MyGeometry, DragDropEvent);
+}
+
+FSlateColor SDialogueGraphPin::GetPinColor() const
+{
+	const UDlgSystemSettings* Settings = GetDefault<UDlgSystemSettings>();
+	const FSlateColor& DefaultPinColor = IsHovered() ? Settings->BorderHoveredBackgroundColor : Settings->BorderBackgroundColor;
+	if (GraphPinObj == nullptr)
+	{
+		return DefaultPinColor;
+	}
+
+	if (UDialogueGraphNode* GraphNode = Cast<UDialogueGraphNode>(GraphPinObj->GetOwningNode()))
+	{
+		if (!GraphNode->CanHaveOutputConnections())
+		{
+			return IsHovered() ? Settings->BorderHoveredBackgroundColorNoChildren : Settings->BorderBackgroundColorNoChildren;
+		}
+
+		if (GraphNode->ShouldUseBorderHighlight())
+		{
+			return Settings->BorderBackgroundColorHighlighted;
+		}
+	}
+
+	return DefaultPinColor;
 }
 // End SWidget interface
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

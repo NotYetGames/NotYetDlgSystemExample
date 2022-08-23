@@ -8,11 +8,14 @@
 #include "Nodes/DlgNode_SpeechSequence.h"
 #include "Nodes/DlgNode_Speech.h"
 #include "Nodes/DlgNode_Selector.h"
+#include "Nodes/DlgNode_Proxy.h"
 #include "DialogueEditor/Nodes/DialogueGraphNode.h"
-#include "Widgets/SDialogueTextPropertyPickList.h"
-#include "Widgets/DialogueTextPropertyPickList_CustomRowHelper.h"
-#include "Widgets/DialogueMultiLineEditableTextBox_CustomRowHelper.h"
-#include "Widgets/DialogueObject_CustomRowHelper.h"
+#include "DialogueEditor/DetailsPanel/Widgets/SDialogueTextPropertyPickList.h"
+#include "DialogueEditor/DetailsPanel/Widgets/DialogueTextPropertyPickList_CustomRowHelper.h"
+#include "DialogueEditor/DetailsPanel/Widgets/DialogueMultiLineEditableTextBox_CustomRowHelper.h"
+#include "DialogueEditor/DetailsPanel/Widgets/DialogueObject_CustomRowHelper.h"
+#include "DialogueEditor/DetailsPanel/Widgets/DialogueIntTextBox_CustomRowHelper.h"
+
 #include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "DialoguGraphNode_Details"
@@ -47,8 +50,10 @@ void FDialogueGraphNode_Details::CustomizeDetails(IDetailLayoutBuilder& DetailBu
 	const bool bIsEndNode = GraphNode->IsEndNode();
 	const bool bIsSpeechNode = GraphNode->IsSpeechNode();
 	const bool bIsSelectorNode = GraphNode->IsSelectorNode();;
+	const bool bIsProxyNode = GraphNode->IsProxyNode();;
 	const bool bIsSpeechSequenceNode = GraphNode->IsSpeechSequenceNode();
 	const bool bIsVirtualParentNode = GraphNode->IsVirtualParentNode();
+	const bool bIsCustomNode = GraphNode->IsCustomNode();
 
 	// Hide the existing category
 	DetailLayoutBuilder->HideCategory(UDialogueGraphNode::StaticClass()->GetFName());
@@ -82,14 +87,17 @@ void FDialogueGraphNode_Details::CustomizeDetails(IDetailLayoutBuilder& DetailBu
 			.Update();
 		}
 
-		// End Nodes can't have children
-		if (!bIsEndNode)
+		// End Nodes and Proxy Nodes can't have children
+		if (!bIsEndNode && !bIsProxyNode)
 		{
 			BaseDataCategory.AddProperty(PropertyDialogueNode->GetChildHandle(UDlgNode::GetMemberNameCheckChildrenOnEvaluation()));
 		}
 
 		BaseDataCategory.AddProperty(PropertyDialogueNode->GetChildHandle(UDlgNode::GetMemberNameEnterConditions()))
 			.ShouldAutoExpand(true);
+
+		BaseDataCategory.AddProperty(PropertyDialogueNode->GetChildHandle(UDlgNode::GetMemberNameEnterRestriction()));
+
 		BaseDataCategory.AddProperty(PropertyDialogueNode->GetChildHandle(UDlgNode::GetMemberNameEnterEvents()))
 			.ShouldAutoExpand(true);
 	}
@@ -98,7 +106,7 @@ void FDialogueGraphNode_Details::CustomizeDetails(IDetailLayoutBuilder& DetailBu
 	BaseDataCategory.AddProperty(PropertyDialogueNode->GetChildHandle(UDlgNode::GetMemberNameGUID()))
 		.ShouldAutoExpand(true);
 
-	if (!bIsEndNode)
+	if (GraphNode->CanHaveOutputConnections())
 	{
 		ChildrenPropertyRow = &BaseDataCategory.AddProperty(
 			PropertyDialogueNode->GetChildHandle(UDlgNode::GetMemberNameChildren())
@@ -111,6 +119,23 @@ void FDialogueGraphNode_Details::CustomizeDetails(IDetailLayoutBuilder& DetailBu
 	// Do nothing
 	if (bIsRootNode)
 	{
+		return;
+	}
+
+	if (bIsCustomNode)
+	{
+		IDetailCategoryBuilder& CustomCategory = DetailLayoutBuilder->EditCategory(Cast<UDlgNode_Custom>(&DialogueNode)->GetCategoryName());
+		CustomCategory.InitiallyCollapsed(false);
+
+		for (FProperty* Property = DialogueNode.GetClass()->PropertyLink; Property != nullptr; Property = Property->PropertyLinkNext)
+		{
+			if (Property->GetOwnerClass() == UDlgNode_Custom::StaticClass() || Property->GetOwnerClass() == UDlgNode::StaticClass())
+			{
+				return;
+			}
+			CustomCategory.AddProperty(PropertyDialogueNode->GetChildHandle(Property->GetFName()));
+		}
+
 		return;
 	}
 
@@ -210,6 +235,20 @@ void FDialogueGraphNode_Details::CustomizeDetails(IDetailLayoutBuilder& DetailBu
 		IDetailCategoryBuilder& SpeechDataCategory = DetailLayoutBuilder->EditCategory(TEXT("Selector Node"));
 		SpeechDataCategory.InitiallyCollapsed(false);
 		SpeechDataCategory.AddProperty(PropertyDialogueNode->GetChildHandle(UDlgNode_Selector::GetMemberNameSelectorType()));
+
+		SpeechDataCategory.AddProperty(PropertyDialogueNode->GetChildHandle(UDlgNode_Selector::GetMemberNameAvoidPickingSameOptionTwiceInARow()));
+		SpeechDataCategory.AddProperty(PropertyDialogueNode->GetChildHandle(UDlgNode_Selector::GetMemberNameCycleThroughSatisfiedOptionsWithoutRepetition()));
+	}
+	else if (bIsProxyNode)
+	{
+		IDetailCategoryBuilder& ProxyDataCategory = DetailLayoutBuilder->EditCategory(TEXT("Proxy Node"));
+		ProxyDataCategory.InitiallyCollapsed(false);
+
+		TSharedPtr<IPropertyHandle> NodeIndexPropertyHandle = PropertyDialogueNode->GetChildHandle(UDlgNode_Proxy::GetMemberNameNodeIndex());
+		FDetailWidgetRow* DetailWidgetRow = &ProxyDataCategory.AddCustomRow(LOCTEXT("TargetNodeSearchKey", "Target Node"));
+		NodeIndexPropertyRow = MakeShared<FDialogueIntTextBox_CustomRowHelper>(DetailWidgetRow, NodeIndexPropertyHandle, Dialogue);
+		NodeIndexPropertyRow->Update();
+		FDialogueDetailsPanelUtils::SetNumericPropertyLimits<int32>(NodeIndexPropertyHandle, 0, Dialogue->GetNodes().Num() - 1);
 	}
 	else if (bIsSpeechSequenceNode)
 	{

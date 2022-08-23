@@ -1,5 +1,5 @@
 // Copyright Csaba Molnar, Daniel Butum. All Rights Reserved.
-#include "DialogueTextPropertyPickList_CustomRowHelper.h"
+#include "DialogueEditor/DetailsPanel/Widgets/DialogueTextPropertyPickList_CustomRowHelper.h"
 
 #include "DetailWidgetRow.h"
 
@@ -19,14 +19,42 @@ void FDialogueTextPropertyPickList_CustomRowHelper::UpdateInternal()
 	->NameContent()
 	[
 		NameContentWidget.ToSharedRef()
-	]
-	.ValueContent()
-	// Similar to TextProperty, see FTextCustomization
-	.MinDesiredWidth(209.f)
-	.MaxDesiredWidth(600.f)
-	[
-		TextPropertyPickListWidget.ToSharedRef()
 	];
+
+	if (ParentStructPropertyHandle && ParentStructPropertyHandle->IsValidHandle())
+	{
+		DetailWidgetRow
+		->ValueContent()
+		// Similar to TextProperty, see FTextCustomization
+		.MinDesiredWidth(209.f)
+		.MaxDesiredWidth(600.f)
+		[
+			SNew(SHorizontalBox)
+			+SHorizontalBox::Slot()
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Fill)
+			[
+				TextPropertyPickListWidget.ToSharedRef()
+			]
+			+SHorizontalBox::Slot()
+			.AutoWidth()
+			.VAlign(VAlign_Center)
+			[
+				ParentStructPropertyHandle->CreateDefaultPropertyButtonWidgets()
+			]
+		];
+	}
+	else
+	{
+		DetailWidgetRow
+		->ValueContent()
+		// Similar to TextProperty, see FTextCustomization
+		.MinDesiredWidth(209.f)
+		.MaxDesiredWidth(600.f)
+		[
+			TextPropertyPickListWidget.ToSharedRef()
+		];
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -1,4 +1,37 @@
+# v15
+- Fixed DialogueDataDisplay Icon
+
+# v15
+**Date:** March 8, 2022
+### New Features
+
+- **Added default class option** for `NodeData` which is used on `Speech` nodes and `SpeechSequence` node entries (Project Settings -> Editor -> Dialogue -> DefaultCustomNodeDataClass).
+- **Added** `DlgParticipantName` **variable type** with custom picker which can be used to reference and access participants in custom events and conditions.
+- **Added** different possible behaviors to handle non-end nodes without any satisfied children (Project Settings -> Editor -> Dialogue -> NoSatisfiedChildBehavior).
+- **Added new node type:** `Proxy Node`. It jumps the execution to the target node without having a visible connection to it, can be used to reduce edge overlaps.
+- `DlgContext` is modified to be more extandable, memory access is routed through it to support custom implementations (Credit goes to Marat Yakupov).
+- **Added support for multiple** `Start` **nodes** to reduce visual complexity. `Start` nodes are evaluated from left to right until one has a satisfied child.
+- The Random mode of the `Selector`node was exteneded to **support avoiding repetition and cycling through options.**
+- `Speech` and `Selector` node colors are darker, more information is displayed on `Selector` nodes.
+- Added custom node support, see `UDlgNode_Custom`
+- **Added `EnterRestriction` parameter** on DlgNodes - can be used as a quicker way to make a node only enterable once
+- Expose `IsNodeVisited` from the DlgContext inside Blueprint
+
+### Deprecations
+
+**DlgDialogue**
+- `GetMutableStartNode` -> `GetMutableStartNodes`
+- `GetStartNode` -> `GetStartNodes`
+- `StartNode` -> `StartNodes`
+
+
+# v14.1
+**Date:** October 24, 2021
+### Bug fixes
+- **Fixed** Prevent helper blueprint nodes from being refreshed if the dialogues are not loaded into memory.
+
 # v14
+**Date:** August 28, 2021
 ### New Features
 - Added the option to have an `UDlgNodeData` on the Edges, this works exactly like on the nodes.
 

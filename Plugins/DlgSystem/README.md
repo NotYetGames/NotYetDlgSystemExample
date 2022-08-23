@@ -13,7 +13,7 @@
 		- [Code Style](#code-style)
 		- [Commit messages](#commit-messages)
 
-Supported unreal versions: `4.25`, `4.26`, `4.27`, `5.0`
+Supported unreal versions: `4.26`, `4.27`, `5.0`
 
 ## Features
 
@@ -31,7 +31,7 @@ Supported unreal versions: `4.25`, `4.26`, `4.27`, `5.0`
     - Option to import from and export to plain text formats (e.g. json)
     - Real time display/edit functionality of the Dialogue runtime data.
 
-**Not yet convinced? Have you seen our [showcase page](https://gitlab.com/NotYetGames/DlgSystem/wikis/Feature-Showcase](https://bit.ly/DlgFeatureShowcase))?**
+**Not yet convinced? Have you seen our [showcase page](https://gitlab.com/NotYetGames/DlgSystem/wikis/Feature-Showcase)?**
 
 ## Links
 
@@ -51,6 +51,7 @@ Games that use this Plugin:
 * [WarriOrb](http://www.warriorb.com) - Souls-like platformer metroidvania. This is our own game :)
 * [Backbone](https://store.steampowered.com/app/865610/Backbone/) - Roleplaying detective adventure
 * [Revolution: Path of a Weaponsmith](https://store.steampowered.com/app/1295560/Revolution_Path_of_a_Weaponsmith/) - Third person stealth shooter
+* [The Ascent](https://store.steampowered.com/app/979690/The_Ascent/) - Cyberpunk Action-shooter RPG
 
 Want to have your game showcased here? Contact us!
 

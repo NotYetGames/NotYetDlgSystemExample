@@ -5,6 +5,7 @@
 #include "DlgDialogue.h"
 #include "Nodes/DlgNode.h"
 #include "DlgMemory.h"
+#include "DlgParticipantName.h"
 
 #include "DlgContext.generated.h"
 
@@ -296,6 +297,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Dialogue|Data")
 	const TMap<FName, UObject*>& GetParticipantsMap() const { return Participants; }
 
+	UFUNCTION(BlueprintPure, Category = "Dialogue|Data")
+	UObject* GetParticipantFromName(const FDlgParticipantName& Participant);
+
 	UFUNCTION(BlueprintPure, Category = "Dialogue|ActiveNode")
 	int32 GetActiveNodeIndex() const { return ActiveNodeIndex; }
 
@@ -364,7 +368,12 @@ public:
 	bool EnterNode(int32 NodeIndex, TSet<const UDlgNode*> NodesEnteredWithThisStep);
 
 	// Adds the node as visited in the current dialogue memory
-	void SetNodeVisited(int32 NodeIndex, const FGuid& NodeGUID);
+	virtual void SetNodeVisited(int32 NodeIndex, const FGuid& NodeGUID);
+
+	UFUNCTION(BlueprintPure, Category = "Dialogue|Context|History")
+	virtual bool IsNodeVisited(int32 NodeIndex, const FGuid& NodeGUID, bool bLocalHistory) const;
+
+	virtual FDlgNodeSavedData& GetNodeSavedData(const FGuid& NodeGUID);
 
 	// Gets the Node at the NodeIndex index
 	UFUNCTION(BlueprintPure, Category = "Dialogue|Data", DisplayName = "Get Node From Index")
