@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Misc/Build.h"
 #include "Runtime/Launch/Resources/Version.h"
+#include "Templates/SubclassOf.h"
 
 #include "Engine/DeveloperSettings.h"
 #include "Layout/Margin.h"
@@ -14,7 +15,10 @@
 #include "ClassViewerModule.h"
 #endif
 
+#include "DlgNodeData.h"
+
 #include "DlgSystemSettings.generated.h"
+
 
 // Defines the format of the Dialogue text
 UENUM()
@@ -116,6 +120,20 @@ enum class EDlgClassPickerDisplayMode : uint8
 	ListView
 };
 
+// Defines the runtime behavior when a non-end node has no valid child
+UENUM()
+enum class EDlgNoSatisfiedChildBehavior : uint8
+{
+	// Error messaage is fired, dialogue context marks that the dialogue ended and returns with false
+	PrintErrorAndEndDialogue,
+
+	// No error messaage is fired, dialogue context marks that the dialogue ended and returns with false
+	EndDialogue,
+
+	// System assumes this is normal and the context returns with True. The game is expected to handle that there are no valid options.
+	ContinueDialogue
+};
+
 // UDeveloperSettings classes are auto discovered https://wiki.unrealengine.com/CustomSettings
 UCLASS(Config = Engine, DefaultConfig, meta = (DisplayName = "Dialogue System Settings"))
 class DLGSYSTEM_API UDlgSystemSettings : public UDeveloperSettings
@@ -183,7 +201,11 @@ public:
 		const UClass* ThisClass = GetClass();
 		if (ThisClass->HasAnyClassFlags(CLASS_DefaultConfig))
 		{
+#if NY_ENGINE_VERSION >= 500
+			TryUpdateDefaultConfigFile();
+#else
 			UpdateDefaultConfigFile();
+#endif
 		}
 		else if (ThisClass->HasAnyClassFlags(CLASS_GlobalUserConfig))
 		{
@@ -232,6 +254,11 @@ public:
 	UPROPERTY(Category = "Runtime", Config, EditAnywhere)
 	bool bRegisterDialogueConsoleCommandsAutomatically = true;
 
+	// By default the dialogue assumes that there should always be a valid child (with satisfied conditions) for each non-end node
+	// Use this setting to override that behavior
+	UPROPERTY(Category = "Runtime", Config, EditAnywhere)
+	EDlgNoSatisfiedChildBehavior NoSatisfiedChildBehavior;
+
 
 	// The dialogue text format used for saving and reloading from text files.
 	UPROPERTY(Category = "Dialogue", Config, EditAnywhere, DisplayName = "Text Format")
@@ -273,6 +300,10 @@ public:
 	// Any properties that belong to these classes won't be shown in the suggestion list when you use the reflection system (class variables).
 	UPROPERTY(Category = "Dialogue", Config, EditAnywhere)
 	TArray<UClass*> BlacklistedReflectionClasses;
+
+	// Default class to use for custom node data
+	UPROPERTY(Category = "Dialogue", Config, EditAnywhere)
+	TSubclassOf<UDlgNodeData> DefaultCustomNodeDataClass;
 
 	// How the Blueprint class pricker looks like
 	UPROPERTY(Category = "Blueprint", Config, EditAnywhere)
@@ -424,7 +455,7 @@ public:
 
 	// The background color of the normal speech node. */
 	UPROPERTY(Category = "Graph Node Color", Config, EditAnywhere)
-	FLinearColor SpeechNodeColor = FLinearColor{0.050980f, 0.278431f, 0.631373f, 1.f}; // blueish
+	FLinearColor SpeechNodeColor = FLinearColor{0.04f, 0.22f, 0.48f, 1.f}; // blueish
 
 	// The background color of the root node.
 	UPROPERTY(Category = "Graph Node Color", Config, EditAnywhere)
@@ -440,15 +471,20 @@ public:
 
 	// The background color of the selector first node.
 	UPROPERTY(Category = "Graph Node Color", Config, EditAnywhere)
-	FLinearColor SelectorFirstNodeColor = FLinearColor{0.f, 0.721569f, 0.831373f, 1.f};  // cyan
+	FLinearColor SelectorFirstNodeColor = FLinearColor{0.f, 0.13f, 0.15f, 1.f};  // dark cyan
 
 	// The background color of the selector random node.
 	UPROPERTY(Category = "Graph Node Color", Config, EditAnywhere)
-	FLinearColor SelectorRandomNodeColor = FLinearColor{1.f, 0.839216f, 0.f, 1.f}; // yellow
+	FLinearColor SelectorRandomNodeColor = FLinearColor{0.18f, 0.15f, 0.f, 1.f}; // dark yellow
 
 	// The background color of the selector random node.
 	UPROPERTY(Category = "Graph Node Color", Config, EditAnywhere)
 	FLinearColor SpeechSequenceNodeColor = FLinearColor{0.050980f, 0.278431f, 0.631373f, 1.f}; // blueish
+
+	// The background color of the proxy node.
+	UPROPERTY(Category = "Graph Node Color", Config, EditAnywhere)
+	FLinearColor ProxyNodeColor = FLinearColor{ 0.01f, 0.2f, 0.09f, 1.f }; // greenish
+
 
 	// The background color of the node borders.
 	UPROPERTY(Category = "Graph Node Color", Config, EditAnywhere)
@@ -457,6 +493,19 @@ public:
 	// The background color of the node borders when hovered over
 	UPROPERTY(Category = "Graph Node Color", Config, EditAnywhere)
 	FLinearColor BorderHoveredBackgroundColor = FLinearColor(0.380392f, 0.380392f, 0.380392f, 1.0f); // gray
+
+	// The background color of the node borders for nodes which can't have children.
+	UPROPERTY(Category = "Graph Node Color", Config, EditAnywhere)
+	FLinearColor BorderBackgroundColorNoChildren = FLinearColor(0.0f, 0.05f, 0.1f, 1.0f);
+
+	// The background color of the node borders for nodes which can't have children when hovered over
+	UPROPERTY(Category = "Graph Node Color", Config, EditAnywhere)
+	FLinearColor BorderHoveredBackgroundColorNoChildren = FLinearColor(0.0f, 0.1f, 0.2f, 1.0f);
+
+	// The background color of the node borders for nodes which are highlighted
+	UPROPERTY(Category = "Graph Node Color", Config, EditAnywhere)
+	FLinearColor BorderBackgroundColorHighlighted = FLinearColor{ 0.050980f, 0.631373f, 0.278431f, 1.f }; // greenish
+
 
 	// The amount of blank space left around the edges of the speaker text area in case of speech sequence nodes.
 	UPROPERTY(Category = "Graph Node Speech Sequence", Config, EditAnywhere)

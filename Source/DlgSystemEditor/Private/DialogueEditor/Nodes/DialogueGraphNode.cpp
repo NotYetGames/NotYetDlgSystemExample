@@ -17,6 +17,7 @@
 #include "DialogueGraphNode_Edge.h"
 #include "DialogueCommands.h"
 #include "DlgSystemSettings.h"
+#include "Nodes/DlgNode_Custom.h"
 
 #define LOCTEXT_NAMESPACE "DialogueGraphNode"
 
@@ -98,6 +99,20 @@ FText UDialogueGraphNode::GetNodeTitle(ENodeTitleType::Type TitleType) const
 	if (NodeIndex == INDEX_NONE)
 	{
 		return Super::GetNodeTitle(TitleType);
+	}
+
+	if (UDlgNode_Proxy* Proxy = Cast<UDlgNode_Proxy>(DialogueNode))
+	{
+		return FText::FromString(FString("Proxy to ") + FString::FromInt(Proxy->GetTargetNodeIndex()));
+	}
+
+	if (const UDlgNode_Custom* AsCustom = Cast<const UDlgNode_Custom>(DialogueNode))
+	{
+		FString TitleOverride;
+		if (AsCustom->GetNodeTitleOverride(TitleOverride))
+		{
+			return FText::FromString(TitleOverride);
+		}
 	}
 
 	const FString FullString = DialogueNode->GetNodeParticipantName().ToString();
@@ -273,6 +288,27 @@ void UDialogueGraphNode::AutowireNewNode(UEdGraphPin* FromPin)
 	verify(Schema->TryCreateConnection(FromPin, InputpIn));
 	FromPin->GetOwningNode()->NodeConnectionListChanged();
 }
+
+bool UDialogueGraphNode::CanHaveInputConnections() const
+{
+	if (const UDlgNode_Custom* AsCustom = Cast<const UDlgNode_Custom>(DialogueNode))
+	{
+		return AsCustom->CanHaveInputConnections();
+	}
+
+	return NodeIndex != INDEX_NONE && !IsRootNode();
+}
+
+bool UDialogueGraphNode::CanHaveOutputConnections() const
+{
+	if (const UDlgNode_Custom* AsCustom = Cast<const UDlgNode_Custom>(DialogueNode))
+	{
+		return AsCustom->CanHaveOutputConnections();
+	}
+
+	return !IsEndNode() && !IsProxyNode();
+}
+
 // End UEdGraphNode interface
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -285,6 +321,11 @@ FLinearColor UDialogueGraphNode::GetNodeBackgroundColor() const
 		return FLinearColor::Black;
 	}
 
+	if (const UDlgNode_Custom* AsCustom = Cast<const UDlgNode_Custom>(DialogueNode))
+	{
+		return AsCustom->GetNodeColor();
+	}
+
 	const UDlgSystemSettings* Settings = GetDefault<UDlgSystemSettings>();
 	if (IsSpeechNode())
 	{
@@ -294,6 +335,11 @@ FLinearColor UDialogueGraphNode::GetNodeBackgroundColor() const
 		}
 
 		return Settings->SpeechNodeColor;
+	}
+
+	if (IsProxyNode())
+	{
+		return Settings->ProxyNodeColor;
 	}
 
 	if (IsSelectorNode())
@@ -371,6 +417,38 @@ bool UDialogueGraphNode::HasVoicePropertiesSet() const
 				return true;
 			}
 		}
+	}
+
+	return false;
+}
+
+bool UDialogueGraphNode::IsProxyNodeLeadingToIt() const
+{
+	const UDlgDialogue* Dialogue = GetDialogue();
+	for (UDlgNode* Node : Dialogue->GetNodes())
+	{
+		if (UDlgNode_Proxy* Proxy = Cast<UDlgNode_Proxy>(Node))
+		{
+			if (Proxy->GetTargetNodeIndex() == NodeIndex)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool UDialogueGraphNode::CanBeOrphan() const
+{
+	if (IsRootNode() || IsProxyNodeLeadingToIt())
+	{
+		return true;
+	}
+
+	if (const UDlgNode_Custom* AsCustom = Cast<const UDlgNode_Custom>(DialogueNode))
+	{
+		return AsCustom->CanBeOrphan();
 	}
 
 	return false;
@@ -487,9 +565,9 @@ void UDialogueGraphNode::ApplyCompilerWarnings()
 	ClearCompilerMessage();
 
 	// Is Orphan node
-	if (!IsRootNode() && GetInputPin()->LinkedTo.Num() == 0)
+	if (GetInputPin()->LinkedTo.Num() == 0 && !CanBeOrphan())
 	{
-		SetCompilerWarningMessage(TEXT("Node has no input connections (orphan). It will not be accessible from anywhere"));
+		SetCompilerWarningMessage(TEXT("Node has no input connections (orphan) and no proxy node points to it. It will not be accessible from anywhere"));
 	}
 	else if (DialogueNode->GetNodeOpenChildren_DEPRECATED().Num() > 0)
 	{

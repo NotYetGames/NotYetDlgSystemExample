@@ -44,6 +44,30 @@ FReply SDialogueGraphNode::OnDrop(const FGeometry& MyGeometry, const FDragDropEv
 	return Super::OnDrop(MyGeometry, DragDropEvent);
 }
 
+FReply SDialogueGraphNode::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent)
+{
+	if (DialogueGraphNode == nullptr)
+	{
+		return Super::OnMouseButtonDoubleClick(InMyGeometry, InMouseEvent);
+	}
+
+	const UDlgNode_Proxy* Proxy = Cast<UDlgNode_Proxy>(&DialogueGraphNode->GetDialogueNode());
+	if (Proxy == nullptr)
+	{
+		return Super::OnMouseButtonDoubleClick(InMyGeometry, InMouseEvent);
+	}
+
+	const int32 TargetIndex = Proxy->GetTargetNodeIndex();
+	const TArray<UDlgNode*>& Nodes = DialogueGraphNode->GetDialogue()->GetNodes();
+	if (Nodes.IsValidIndex(TargetIndex))
+	{
+		FDialogueEditorUtilities::JumpToGraphNode(Nodes[TargetIndex]->GetGraphNode());
+		return FReply::Handled();
+	}
+
+	return Super::OnMouseButtonDoubleClick(InMyGeometry, InMouseEvent);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Begin SNodePanel::SNode Interface
 TArray<FOverlayWidgetInfo> SDialogueGraphNode::GetOverlayWidgets(bool bSelected, const FVector2D& WidgetSize) const
@@ -497,6 +521,33 @@ TSharedRef<SWidget> SDialogueGraphNode::GetDescriptionWidget()
 	}
 
 	return DescriptionWidget.ToSharedRef();
+}
+
+FText SDialogueGraphNode::GetDescription() const
+{
+	if (DialogueGraphNode && DialogueGraphNode->IsDialogueNodeSet())
+	{
+		const UDlgNode& DlgNode = DialogueGraphNode->GetDialogueNode();
+
+		if (const UDlgNode_Proxy* AsProxy = Cast<UDlgNode_Proxy>(&DlgNode))
+		{
+			// if proxy node let's try to return with the text of the node the proxy leads to
+
+			const int32 TargetNodeIndex = AsProxy->GetTargetNodeIndex();
+			const UDlgDialogue* Dialogue = DialogueGraphNode->GetDialogue();
+			const TArray<UDlgNode*>& Nodes = Dialogue->GetNodes();
+			if (Nodes.IsValidIndex(TargetNodeIndex))
+			{
+				return Nodes[TargetNodeIndex]->GetNodeUnformattedText();
+			}
+		}
+		else
+		{
+			return DialogueGraphNode->GetDialogueNode().GetNodeUnformattedText();
+		}
+	}
+
+	return FText::GetEmpty();
 }
 
 EVisibility SDialogueGraphNode::GetOverlayWidgetVisibility() const

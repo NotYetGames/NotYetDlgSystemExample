@@ -4,7 +4,13 @@
 
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
-#include "HAL/PlatformFilemanager.h"
+
+#if ENGINE_MAJOR_VERSION >= 5
+    #include "HAL/PlatformFileManager.h"
+#else
+    #include "HAL/PlatformFilemanager.h"
+#endif
+
 #include "GenericPlatform/GenericPlatformFile.h"
 #include "UObject/Package.h"
 #include "FileHelpers.h"
@@ -158,7 +164,9 @@ int32 UDlgExportTwineCommandlet::Main(const FString& Params)
 		const TArray<UDlgNode*>& Nodes = Dialogue->GetNodes();
 		MinimumGraphX = 0;
 		MinimumGraphY = 0;
-		if (const UDialogueGraphNode* DialogueGraphNode = Cast<UDialogueGraphNode>(Dialogue->GetStartNode().GetGraphNode()))
+
+		// TODO: multiple start nodes?
+		if (const UDialogueGraphNode* DialogueGraphNode = Cast<UDialogueGraphNode>(Dialogue->GetStartNodes()[0]->GetGraphNode()))
 		{
 			MinimumGraphX = FMath::Min(MinimumGraphX, DialogueGraphNode->NodePosX);
 			MinimumGraphY = FMath::Min(MinimumGraphY, DialogueGraphNode->NodePosY);
@@ -176,10 +184,12 @@ int32 UDlgExportTwineCommandlet::Main(const FString& Params)
 		}
 		//UE_LOG(LogDlgExportTwineCommandlet, Verbose, TEXT("MinimumGraphX = %d, MinimumGraphY = %d"), MinimumGraphX, MinimumGraphY);
 
+		// TODO: multiple start nodes?
+
 		// Gather passages data
 		CurrentNodesAreas.Empty();
 		FString PassagesData;
-		PassagesData += CreateTwinePassageDataFromNode(*Dialogue, Dialogue->GetStartNode(), INDEX_NONE) + TEXT("\n");
+		PassagesData += CreateTwinePassageDataFromNode(*Dialogue, *Dialogue->GetStartNodes()[0], INDEX_NONE) + TEXT("\n");
 
 		// The rest of the nodes
 		for (int32 NodeIndex = 0; NodeIndex < Nodes.Num(); NodeIndex++)

@@ -12,6 +12,7 @@
 class FDialogueObject_CustomRowHelper;
 class FDialogueTextPropertyPickList_CustomRowHelper;
 class FDialogueMultiLineEditableTextBox_CustomRowHelper;
+class FDialogueIntTextBox_CustomRowHelper;
 
 /**
  * How the details customization panel looks for UDialogueGraphNode object
@@ -33,7 +34,6 @@ private:
 	/** Handler for when the text is changed */
 	void HandleTextCommitted(const FText& InText, ETextCommit::Type CommitInfo);
 	void HandleTextChanged(const FText& InText);
-
 
 	/** Gets the ParticipantNames from all Dialogues. */
 	TArray<FName> GetDialoguesParticipantNames() const
@@ -81,6 +81,7 @@ private:
 	TSharedPtr<FDialogueTextPropertyPickList_CustomRowHelper> ParticipantNamePropertyRow;
 	TSharedPtr<FDialogueTextPropertyPickList_CustomRowHelper> SpeakerStatePropertyRow;
 	TSharedPtr<FDialogueMultiLineEditableTextBox_CustomRowHelper> TextPropertyRow;
+	TSharedPtr<FDialogueIntTextBox_CustomRowHelper> NodeIndexPropertyRow;
 	IDetailPropertyRow* NodeDataPropertyRow = nullptr;
 	TSharedPtr<FDialogueObject_CustomRowHelper> NodeDataPropertyRow_CustomDisplay;
 	IDetailPropertyRow* VoiceSoundWavePropertyRow = nullptr;

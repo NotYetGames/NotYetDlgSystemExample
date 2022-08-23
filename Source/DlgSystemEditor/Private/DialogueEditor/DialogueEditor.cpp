@@ -330,7 +330,9 @@ void FDialogueEditor::InitDialogueEditor(
 				// Toolbar
 				FTabManager::NewStack()
 				->SetSizeCoefficient(0.1f)
+#if NY_ENGINE_VERSION < 500
 				->AddTab(GetToolbarTabId(), ETabState::OpenedTab)
+#endif
 				->SetHideTabWell(true)
 			)
 			->Split
@@ -790,14 +792,19 @@ void FDialogueEditor::ExtendToolbar()
 TSharedRef<SDockTab> FDialogueEditor::SpawnTab_Details(const FSpawnTabArgs& Args) const
 {
 	check(Args.GetTabId() == DetailsTabID);
-	return SNew(SDockTab)
-		// TODO use DialogueEditor.Tabs.Properties
-		.Icon(FEditorStyle::GetBrush("GenericEditor.Tabs.Properties"))
+
+	TSharedRef<SDockTab> NewTab = SNew(SDockTab)
 		.Label(LOCTEXT("DialogueDetailsTitle", "Details"))
 		.TabColorScale(GetTabColorScale())
 		[
 			DetailsView.ToSharedRef()
 		];
+
+	// TODO use DialogueEditor.Tabs.Properties
+	const auto* IconBrush = FEditorStyle::GetBrush(TEXT("GenericEditor.Tabs.Properties"));
+	NewTab->SetTabIcon(IconBrush);
+
+	return NewTab;
 }
 
 TSharedRef<SDockTab> FDialogueEditor::SpawnTab_GraphCanvas(const FSpawnTabArgs& Args) const
@@ -813,23 +820,33 @@ TSharedRef<SDockTab> FDialogueEditor::SpawnTab_GraphCanvas(const FSpawnTabArgs& 
 TSharedRef<SDockTab> FDialogueEditor::SpawnTab_Palette(const FSpawnTabArgs& Args) const
 {
 	check(Args.GetTabId() == PaletteTabId);
-	return SNew(SDockTab)
-		.Icon(FEditorStyle::GetBrush("Kismet.Tabs.Palette"))
+
+	TSharedRef<SDockTab> NewTab = SNew(SDockTab)
 		.Label(LOCTEXT("DialoguePaletteTitle", "Palette"))
 		[
 			PaletteView.ToSharedRef()
 		];
+
+	const auto* IconBrush = FEditorStyle::GetBrush(TEXT("Kismet.Tabs.Palette"));
+	NewTab->SetTabIcon(IconBrush);
+
+	return NewTab;
 }
 
 TSharedRef<SDockTab> FDialogueEditor::SpawnTab_FindInDialogue(const FSpawnTabArgs& Args) const
 {
 	check(Args.GetTabId() == FindInDialogueTabId);
-	return SNew(SDockTab)
-		.Icon(FEditorStyle::GetBrush("Kismet.Tabs.FindResults"))
+
+	TSharedRef<SDockTab> NewTab = SNew(SDockTab)
 		.Label(LOCTEXT("FindResultsView", "Find Results"))
 		[
 			FindResultsView.ToSharedRef()
 		];
+
+	const auto* IconBrush = FEditorStyle::GetBrush(TEXT("Kismet.Tabs.FindResults"));
+	NewTab->SetTabIcon(IconBrush);
+
+	return NewTab;
 }
 
 void FDialogueEditor::OnCommandUndoGraphAction() const
@@ -894,6 +911,7 @@ void FDialogueEditor::OnCommandDeleteSelectedNodes() const
 	int32 NumDialogueNodesRemoved = 0;
 	int32 NumBaseDialogueNodesRemoved = 0;
 	int32 NumEdgeDialogueNodesRemoved = 0;
+	int32 NumStartNodesRemoved = 0;
 
 #if DO_CHECK
 	const int32 Initial_DialogueNodesNum = DialogueBeingEdited->GetNodes().Num();
@@ -902,6 +920,7 @@ void FDialogueEditor::OnCommandDeleteSelectedNodes() const
 	const int32 Initial_GraphBaseDialogueNodesNum = DialogueGraph->GetAllBaseDialogueGraphNodes().Num();
 	const int32 Initial_GraphEdgeDialogueNodesNum = DialogueGraph->GetAllEdgeDialogueGraphNodes().Num();
 #endif
+	const int32 Initial_StartNodeNum = DialogueGraph->GetRootGraphNodes().Num();
 
 	// Unselect nodes we are about to delete
 	ClearViewportSelection();
@@ -934,18 +953,38 @@ void FDialogueEditor::OnCommandDeleteSelectedNodes() const
 		}
 	};
 
-
 	for (UObject* NodeObject : SelectedNodes)
 	{
 		UEdGraphNode* SelectedNode = CastChecked<UEdGraphNode>(NodeObject);
+
 		if (!SelectedNode->CanUserDeleteNode())
 		{
 			continue;
 		}
 
-		// Base Node type
-		if (UDialogueGraphNode_Base* NodeBase = Cast<UDialogueGraphNode_Base>(SelectedNode))
+		// only allow root nodes until there is at least one remaining
+		if (UDialogueGraphNode_Root* Root = Cast<UDialogueGraphNode_Root>(SelectedNode))
 		{
+			if (NumStartNodesRemoved == Initial_StartNodeNum - 1)
+			{
+				continue;
+			}
+
+			for (UDialogueGraphNode_Edge* ChildNodeEdge : Root->GetChildEdgeNodes())
+			{
+				RemoveGraphEdgeNode(ChildNodeEdge);
+			}
+
+			// Remove the Node
+			// No need to recompile as the the break node links step will do that for us
+			verify(FDialogueEditorUtilities::RemoveNode(Root));
+			NumStartNodesRemoved++;
+			NumBaseDialogueNodesRemoved++;
+		}
+		else if (UDialogueGraphNode_Base* NodeBase = Cast<UDialogueGraphNode_Base>(SelectedNode))
+		{
+			// Base Node type
+
 			if (UDialogueGraphNode* Node = Cast<UDialogueGraphNode>(NodeBase))
 			{
 				// Remove the parent/child edges
@@ -991,22 +1030,23 @@ void FDialogueEditor::OnCommandDeleteSelectedNodes() const
 #if DO_CHECK
 	// Check if we removed as we counted
 	check(Initial_DialogueNodesNum - NumDialogueNodesRemoved == DialogueBeingEdited->GetNodes().Num());
-	check(Initial_GraphNodesNum - NumNodesRemoved == DialogueGraph->Nodes.Num());
-	check(Initial_GraphDialogueNodesNum - NumDialogueNodesRemoved == DialogueGraph->GetAllDialogueGraphNodes().Num());
+	check(Initial_GraphNodesNum - NumNodesRemoved - NumStartNodesRemoved == DialogueGraph->Nodes.Num());
+	check(Initial_GraphDialogueNodesNum - NumDialogueNodesRemoved - NumStartNodesRemoved == DialogueGraph->GetAllDialogueGraphNodes().Num());
 	check(Initial_GraphBaseDialogueNodesNum - NumBaseDialogueNodesRemoved == DialogueGraph->GetAllBaseDialogueGraphNodes().Num());
 	check(Initial_GraphEdgeDialogueNodesNum - NumEdgeDialogueNodesRemoved == DialogueGraph->GetAllEdgeDialogueGraphNodes().Num());
 	check(NumEdgeDialogueNodesRemoved == RemovedEdges.Num());
+	check(Initial_StartNodeNum - NumStartNodesRemoved == DialogueGraph->GetRootGraphNodes().Num());
 #endif
 }
 
 bool FDialogueEditor::CanDeleteNodes() const
 {
 	const TSet<UObject*>& SelectedNodes = GetSelectedNodes();
-	// Return false if only root node is selected, as it can't be deleted
+	// Return false if only the last root node is selected, as it can't be deleted
 	if (SelectedNodes.Num() == 1)
 	{
 		const UObject* SelectedNode = *FDlgHelper::GetFirstSetElement(SelectedNodes);
-		return !SelectedNode->IsA(UDialogueGraphNode_Root::StaticClass());
+		return !SelectedNode->IsA(UDialogueGraphNode_Root::StaticClass()) || GetDialogueGraph()->GetRootGraphNodes().Num() > 0;
 	}
 
 	return SelectedNodes.Num() > 0;
@@ -1289,6 +1329,8 @@ void FDialogueEditor::OnSelectedNodesChanged(const TSet<UObject*>& NewSelection)
 	{
 		DetailsView->SetObjects(ViewSelection, /*bForceRefresh=*/ true);
 	}
+
+	UpdateNodesHighlightedByProxy(NewSelection);
 }
 
 FActionMenuContent FDialogueEditor::OnCreateGraphActionMenu(
@@ -1331,6 +1373,46 @@ void FDialogueEditor::OnNodeTitleCommitted(const FText& NewText, ETextCommit::Ty
 	verify(NodeBeingChanged->Modify());
 	NodeBeingChanged->OnRenameNode(NewText.ToString());
 }
+
+void FDialogueEditor::UpdateNodesHighlightedByProxy(const TSet<UObject*>& NewSelection)
+{
+	// gather highlighted node indices based on selection
+	TSet<int32> HighlightedNodeIndices;
+	for (UObject* NodeObject : NewSelection)
+	{
+		UDialogueGraphNode* Node = Cast<UDialogueGraphNode>(NodeObject);
+		if (Node == nullptr)
+		{
+			continue;
+		}
+
+		if (const UDlgNode_Proxy* Proxy = Cast<UDlgNode_Proxy>(&Node->GetDialogueNode()))
+		{
+			HighlightedNodeIndices.Add(Proxy->GetTargetNodeIndex());
+		}
+	}
+
+	// Go through all the nodes in graph, update border highlight if changed
+	for (UEdGraphNode* EdGraphNode : DialogueBeingEdited->GetGraph()->Nodes)
+	{
+		UDialogueGraphNode* Node = Cast<UDialogueGraphNode>(EdGraphNode);
+		if (Node == nullptr)
+		{
+			continue;
+		}
+
+		const bool bShouldBeHighlighted = HighlightedNodeIndices.Contains(Node->GetDialogueNodeIndex());
+		if (Node->ShouldUseBorderHighlight() != bShouldBeHighlighted)
+		{
+			Node->SetUseBorderHighlight(bShouldBeHighlighted);
+			if (GraphEditorView.IsValid())
+			{
+				GraphEditorView->RefreshNode(*Node);
+			}
+		}
+	}
+}
+
 // End of own functions
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

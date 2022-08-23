@@ -396,6 +396,16 @@ const UObject* UDlgContext::GetParticipant(FName ParticipantName) const
 	return nullptr;
 }
 
+UObject* UDlgContext::GetParticipantFromName(const FDlgParticipantName& Participant)
+{
+	if (UObject** ParticipantObjectPtr = Participants.Find(Participant.ParticipantName))
+	{
+		return *ParticipantObjectPtr;
+	}
+
+	return nullptr;
+}
+
 bool UDlgContext::IsValidNodeIndex(int32 NodeIndex) const
 {
 	return Dialogue ? Dialogue->IsValidNodeIndex(NodeIndex) : false;
@@ -440,18 +450,13 @@ bool UDlgContext::IsOptionConnectedToVisitedNode(int32 Index, bool bLocalHistory
 	}
 
 	const FGuid TargetGUID = GetNodeGUIDForIndex(TargetIndex);
-	if (bLocalHistory)
-	{
-		return History.Contains(TargetIndex, TargetGUID);
-	}
-
-	if (Dialogue == nullptr)
+	if (!bLocalHistory && Dialogue == nullptr)
 	{
 		LogErrorWithContext(TEXT("IsOptionConnectedToVisitedNode - This Context does not have a valid Dialogue"));
 		return false;
 	}
 
-	return FDlgMemory::Get().IsNodeVisited(Dialogue->GetGUID(), TargetIndex, TargetGUID);
+	return IsNodeVisited(TargetIndex, TargetGUID, bLocalHistory);
 }
 
 bool UDlgContext::IsOptionConnectedToEndNode(int32 Index, bool bIndexSkipsUnsatisfiedEdges) const
@@ -525,7 +530,7 @@ UDlgContext* UDlgContext::CreateCopy() const
 		return nullptr;
 	}
 
-	auto* Context = NewObject<UDlgContext>(FirstParticipant, StaticClass());
+	auto* Context = NewObject<UDlgContext>(FirstParticipant, GetClass());
 	Context->Dialogue = Dialogue;
 	Context->SetParticipants(Participants);
 	Context->ActiveNodeIndex = ActiveNodeIndex;
@@ -541,6 +546,21 @@ void UDlgContext::SetNodeVisited(int32 NodeIndex, const FGuid& NodeGUID)
 {
 	FDlgMemory::Get().SetNodeVisited(Dialogue->GetGUID(), NodeIndex, NodeGUID);
 	History.Add(NodeIndex, NodeGUID);
+}
+
+bool UDlgContext::IsNodeVisited(int32 NodeIndex, const FGuid& NodeGUID, bool bLocalHistory) const
+{
+	if (bLocalHistory)
+	{
+		return History.Contains(NodeIndex, NodeGUID);
+	}
+
+	return FDlgMemory::Get().IsNodeVisited(Dialogue->GetGUID(), NodeIndex, NodeGUID);
+}
+
+FDlgNodeSavedData& UDlgContext::GetNodeSavedData(const FGuid& NodeGUID)
+{
+	return FDlgMemory::Get().FindOrAddEntry(Dialogue->GetGUID()).GetNodeData(NodeGUID);
 }
 
 UDlgNode_SpeechSequence* UDlgContext::GetMutableActiveNodeAsSpeechSequence() const
@@ -628,21 +648,23 @@ bool UDlgContext::CanBeStarted(UDlgDialogue* InDialogue, const TMap<FName, UObje
 	check(FirstParticipant != nullptr);
 
 	// Create temporary context that is Garbage Collected after this function returns (hopefully)
-	auto* Context = NewObject<UDlgContext>(FirstParticipant, StaticClass());
+	auto* Context = NewObject<UDlgContext>(FirstParticipant, UDlgContext::StaticClass());
 	Context->Dialogue = InDialogue;
 	Context->SetParticipants(InParticipants);
 
 	// Evaluate edges/children of the start node
-	const UDlgNode& StartNode = InDialogue->GetStartNode();
-	for (const FDlgEdge& ChildLink : StartNode.GetNodeChildren())
+	for (const UDlgNode* StartNode : InDialogue->GetStartNodes())
 	{
-		if (ChildLink.Evaluate(*Context, {}))
+		for (const FDlgEdge& ChildLink : StartNode->GetNodeChildren())
 		{
-			// Simulate EnterNode
-			UDlgNode* Node = Context->GetMutableNodeFromIndex(ChildLink.TargetIndex);
-			if (Node && Node->HasAnySatisfiedChild(*Context, {}))
+			if (ChildLink.Evaluate(*Context, {}))
 			{
-				return true;
+				// Simulate EnterNode
+				UDlgNode* Node = Context->GetMutableNodeFromIndex(ChildLink.TargetIndex);
+				if (Node && Node->HasAnySatisfiedChild(*Context, {}))
+				{
+					return true;
+				}
 			}
 		}
 	}
@@ -664,20 +686,23 @@ bool UDlgContext::StartWithContext(const FString& ContextString, UDlgDialogue* I
 	}
 
 	// Evaluate edges/children of the start node
-	const UDlgNode& StartNode = Dialogue->GetStartNode();
-	for (const FDlgEdge& ChildLink : StartNode.GetNodeChildren())
+	
+	for (const UDlgNode* StartNode : Dialogue->GetStartNodes())
 	{
-		if (ChildLink.Evaluate(*this, {}))
+		for (const FDlgEdge& ChildLink : StartNode->GetNodeChildren())
 		{
-			if (EnterNode(ChildLink.TargetIndex, {}))
+			if (ChildLink.Evaluate(*this, {}))
 			{
-				return true;
+				if (EnterNode(ChildLink.TargetIndex, {}))
+				{
+					return true;
+				}
 			}
 		}
 	}
 
 	LogErrorWithContext(FString::Printf(
-		TEXT("%s - FAILED because all possible start node condition failed. Edge conditions and children enter conditions from the start node are not satisfied"),
+		TEXT("%s - FAILED because all possible start node condition failed. Edge conditions and children enter conditions from the start nodes are not satisfied"),
 		*ContextMessage
 	));
 	return false;

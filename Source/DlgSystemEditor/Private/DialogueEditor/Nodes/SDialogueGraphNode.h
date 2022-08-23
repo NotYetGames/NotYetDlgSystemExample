@@ -42,10 +42,7 @@ public:
 	}
 	FReply OnDrop(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent) override;
 
-	FReply OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent) override
-	{
-		return Super::OnMouseButtonDoubleClick(InMyGeometry, InMouseEvent);
-	}
+	FReply OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent) override;
 	FReply OnMouseMove(const FGeometry& SenderGeometry, const FPointerEvent& MouseEvent) override
 	{
 		return Super::OnMouseMove(SenderGeometry, MouseEvent);
@@ -116,15 +113,7 @@ protected:
 	FSlateColor GetBackgroundColor() const { return DialogueGraphNode->GetNodeBackgroundColor(); }
 
 	// Gets the main description of this Node.
-	FText GetDescription() const
-	{
-		if (DialogueGraphNode && DialogueGraphNode->IsDialogueNodeSet())
-		{
-			return DialogueGraphNode->GetDialogueNode().GetNodeUnformattedText();
-		}
-
-		return FText::GetEmpty();
-	}
+	FText GetDescription() const;
 
 	// Gets all speech sequence entries for the Node of type Speech Sequence
 	const TArray<FDlgSpeechSequenceEntry>& GetSpeechSequenceEntries() const
