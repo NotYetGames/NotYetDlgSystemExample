@@ -1,6 +1,6 @@
 # Not Yet: Dialogue Plugin System - Example Project
 
-Branch Unreal version: `4.27`
+Branch Unreal version: `5.0`
 
 Example project for the [DlgSystem](https://github.com/NotYetGames/DlgSystem/) plugin.
 
@@ -39,7 +39,7 @@ you can just delete the `Plugins` folder from the example project.
 ## Clone
 
 ```sh
-git clone -b 4.27 https://github.com/NotYetGames/NotYetDlgSystemExample.git
+git clone -b 5.0 https://github.com/NotYetGames/NotYetDlgSystemExample.git
 ```
 
 ## Git commands
