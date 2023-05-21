@@ -4,11 +4,11 @@ Branch Unreal version: `4.27`
 
 Github Mirror: [HERE](https://github.com/NotYetGames/NotYetDlgSystemExample)
 
-Example project for the [DlgSystem](https://gitlab.com/NotYetGames/DlgSystem/) plugin.
+Example project for the [DlgSystem](https://github.com/NotYetGames/DlgSystem/) plugin.
 
-**See the [Wiki](https://gitlab.com/NotYetGames/DlgSystem/wikis/home) for the manual and tutorials.**
+**See the [Wiki](https://github.com/NotYetGames/DlgSystem/wiki) for the manual and tutorials.**
 
-#### ℹ️ NOTE: 📄 The Text Version step by step explanation of this [Project is here](https://gitlab.com/NotYetGames/DlgSystem/-/wikis/Example-Tutorial-Blueprint)
+#### ℹ️ NOTE: 📄 The Text Version step by step explanation of this [Project is here](https://github.com/NotYetGames/DlgSystem/wiki/Example-Tutorial-Blueprint)
 #### ℹ️ NOTE: 🎥 There is a video tutorial version [here in this playlist](https://bit.ly/DlgSystemVideoTutorials)
 
 
@@ -41,7 +41,7 @@ you can just delete the `Plugins` folder from the example project.
 ## Clone
 
 ```sh
-git clone -b 4.27 https://gitlab.com/NotYetGames/NotYetDlgSystemExample.git
+git clone -b 4.27 https://github.com/NotYetGames/NotYetDlgSystemExample.git
 ```
 
 ## Git commands
@@ -51,8 +51,8 @@ git clone -b 4.27 https://gitlab.com/NotYetGames/NotYetDlgSystemExample.git
 
 # Push subtree modifications
 # NOTE: This is only if you modified the Plugins/DlgSystem subtree.
-git subtree push --prefix=Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git master
+git subtree push --prefix=Plugins/DlgSystem https://github.com/NotYetGames/DlgSystem.git master
 
 # Was added with
-git subtree add --prefix Plugins/DlgSystem https://gitlab.com/NotYetGames/DlgSystem.git master --squash
+git subtree add --prefix Plugins/DlgSystem https://github.com/NotYetGames/DlgSystem.git master --squash
 ```
