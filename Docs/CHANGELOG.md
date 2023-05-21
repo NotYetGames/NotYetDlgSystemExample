@@ -1,5 +1,25 @@
-# v15
-- Fixed DialogueDataDisplay Icon
+# v16.0.1 & v16.0.2
+
+- Fix building on 5.1 in a few scenarios
+- Fix lookup of enums in UE5.1
+In Unreal 5.1, Epic deprecated `ANY_PACKAGE` in FindObject instead requiring a valid Outer to look up objects. Passing in nullptr to this function now returns nullptr.
+A new FindFirstObject API was added in 5.1 that is used internally by the engine code to look up enums by name.
+- An 'if' test in `GetAllWeakActorsWithDialogueParticipantInterface` was acting only if an actor was valid AND invalid.
+- Add preliminary support for UE 5.2
+
+# v16
+
+### Upgrade Notes
+- The Private/Public directories don't exist anymore, everything is public now by default
+
+### New Features
+
+- Added String support for Dialogue Text Property Pick List suggestions.
+
+### Bug fixes
+- **Fixed** DialogueDataDisplay Icon.
+- **Fixed** crash on editor launch when an AssetData has a null class.
+- **Fixed** Crash exception inside [GCObjectReferencer.cpp:165](https://gitlab.com/NotYetGames/DlgSystem/-/merge_requests/13)
 
 # v15
 **Date:** March 8, 2022
