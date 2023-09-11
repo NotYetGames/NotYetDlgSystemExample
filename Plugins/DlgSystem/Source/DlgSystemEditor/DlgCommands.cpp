@@ -15,6 +15,13 @@ void FDlgCommands::RegisterCommands()
 	);
 
 	UI_COMMAND(
+		ToggleShowEdgeText,
+		"Show Edge Texts",
+		"Toggles displaying Edge Text on the Graph.",
+		EUserInterfaceActionType::ToggleButton, FInputChord()
+	);
+
+	UI_COMMAND(
 		ToggleShowPrimarySecondaryEdges,
 		"Show primary/secondary edges",
 		"Toggles the viewing of the primary/secondary edges.",
@@ -32,6 +39,13 @@ void FDlgCommands::RegisterCommands()
 		ToggleDrawSecondaryEdges,
 		"Draws the secondary edges",
 		"Toggles the drawing of the secondary edges",
+		EUserInterfaceActionType::ToggleButton, FInputChord()
+	);
+
+	UI_COMMAND(
+		ToggleShowEventsAndConditions,
+		"Events and Conditions",
+		"Toggles displaying Events and Conditions on the Graph",
 		EUserInterfaceActionType::ToggleButton, FInputChord()
 	);
 

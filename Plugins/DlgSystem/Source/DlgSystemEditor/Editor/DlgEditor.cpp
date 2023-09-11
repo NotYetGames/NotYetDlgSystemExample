@@ -596,6 +596,17 @@ void FDlgEditor::BindEditorCommands()
 		})
 	);
 
+	// The Show Edge Text button
+	ToolkitCommands->MapAction(
+		DialogueCommands.ToggleShowEdgeText,
+		FExecuteAction::CreateLambda([this]
+		{
+			Settings->SetShowEdgeText(!GetSettings().bShowEdgeText);
+		}),
+		FCanExecuteAction::CreateLambda([] { return true; } ),
+		FIsActionChecked::CreateLambda([this] { return GetSettings().bShowEdgeText; })
+	);
+
 	// The Show primary/secondary edge buttons
 	ToolkitCommands->MapAction(
 		DialogueCommands.ToggleShowPrimarySecondaryEdges,
@@ -623,6 +634,17 @@ void FDlgEditor::BindEditorCommands()
 		FExecuteAction::CreateLambda([this] { Settings->SetDrawSecondaryEdges(!GetSettings().bDrawSecondaryEdges); }),
 		FCanExecuteAction::CreateLambda([this] { return GetSettings().bShowPrimarySecondaryEdges; }),
 		FIsActionChecked::CreateLambda([this] { return GetSettings().bDrawSecondaryEdges; })
+	);
+
+	// The Show Events And Conditions button
+	ToolkitCommands->MapAction(
+		DialogueCommands.ToggleShowEventsAndConditions,
+		FExecuteAction::CreateLambda([this]
+			{
+				Settings->SetShowEventsAndConditions(!GetSettings().bShowEventsAndConditions);
+			}),
+		FCanExecuteAction::CreateLambda([] { return true; }),
+		FIsActionChecked::CreateLambda([this] { return GetSettings().bShowEventsAndConditions; })
 	);
 
 	// Find in All Dialogues
@@ -733,6 +755,8 @@ void FDlgEditor::ExtendToolbar()
 					ToolbarBuilder.AddToolBarButton(FDlgCommands::Get().DialogueReloadData);
 					ToolbarBuilder.AddToolBarButton(FDlgCommands::Get().FindInDialogue);
 
+					ToolbarBuilder.AddToolBarButton(FDlgCommands::Get().ToggleShowEdgeText);
+
 					ToolbarBuilder.AddToolBarButton(FDlgCommands::Get().ToggleShowPrimarySecondaryEdges);
 					ToolbarBuilder.AddComboButton(
 						FUIAction(
@@ -748,6 +772,8 @@ void FDlgEditor::ExtendToolbar()
 						FSlateIcon(),
 						true
 					);
+
+					ToolbarBuilder.AddToolBarButton(FDlgCommands::Get().ToggleShowEventsAndConditions);
 				}
 				ToolbarBuilder.EndSection();
 			})

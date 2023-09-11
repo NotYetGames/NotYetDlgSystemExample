@@ -42,7 +42,6 @@ void FDlgEvent::Call(UDlgContext& Context, const FString& ContextString, UObject
 		case EDlgEventType::Event:
 			IDlgDialogueParticipant::Execute_OnDialogueEvent(Participant, &Context, EventName);
 			break;
-
 		case EDlgEventType::ModifyInt:
 			IDlgDialogueParticipant::Execute_ModifyIntValue(Participant, EventName, bDelta, IntValue);
 			break;
@@ -69,8 +68,77 @@ void FDlgEvent::Call(UDlgContext& Context, const FString& ContextString, UObject
 			FNYReflectionHelper::SetVariable<FNameProperty>(Participant, EventName, NameValue);
 			break;
 
+		case EDlgEventType::UnrealFunction:
+			CallUnrealFunction(Context, ContextString, Participant);
+			break;
+
 		default:
 			checkNoEntry();
+	}
+}
+
+FString FDlgEvent::GetEditorDisplayString(UDlgDialogue* OwnerDialogue) const
+{
+	const FString TargetPreFix = (ParticipantName != NAME_None) ? (FString(TEXT("[")) + ParticipantName.ToString() + FString(TEXT("] "))) : TEXT("");
+
+	auto GetSignCharIfNegative = [](auto Number) -> FString
+	{
+		return (Number < 0) ? TEXT("-") : TEXT("");
+	};
+	auto GetSignChar = [](auto Number) -> FString
+	{
+		return (Number < 0) ? TEXT("-") : TEXT("+");
+	};
+
+	auto CreateValueModificationText = [&](const FString& VariableName, auto Number, const FString& ValueAsString) -> FString
+	{
+			if (bDelta)
+			{
+				return TargetPreFix + VariableName + TEXT(" ") + GetSignChar(Number) + TEXT("= ") + ValueAsString;
+			}
+			else
+			{
+				return TargetPreFix + VariableName + TEXT(" = ") + GetSignCharIfNegative(Number) + ValueAsString;
+			}
+	};
+
+	switch (EventType)
+	{
+		case EDlgEventType::Event:
+			return TargetPreFix + TEXT("Call DlgEvent ") + EventName.ToString();
+
+		case EDlgEventType::ModifyInt:
+			return CreateValueModificationText(EventName.ToString(), IntValue, FString::FromInt(IntValue));
+
+		case EDlgEventType::ModifyFloat:
+			return CreateValueModificationText(EventName.ToString(), FloatValue, FString::SanitizeFloat(FloatValue));
+
+		case EDlgEventType::ModifyBool:
+			return TargetPreFix + EventName.ToString() + TEXT(" = ") + (bValue ? TEXT("True") : TEXT("False"));
+
+		case EDlgEventType::ModifyName:
+			return TargetPreFix + EventName.ToString() + TEXT(" = ") + NameValue.ToString();
+
+		case EDlgEventType::ModifyClassIntVariable:
+			return CreateValueModificationText(TEXT("C ") + EventName.ToString(), IntValue, FString::FromInt(IntValue));
+
+		case EDlgEventType::ModifyClassFloatVariable:
+			return CreateValueModificationText(TEXT("C ") + EventName.ToString(), FloatValue, FString::SanitizeFloat(FloatValue));
+
+		case EDlgEventType::ModifyClassBoolVariable:
+			return TargetPreFix + TEXT("C ") + EventName.ToString() + TEXT(" = ") + (bValue ? TEXT("True") : TEXT("False"));
+
+		case EDlgEventType::ModifyClassNameVariable:
+			return TargetPreFix + TEXT("C ") + EventName.ToString() + TEXT(" = ") + NameValue.ToString();
+
+		case EDlgEventType::Custom:
+			return CustomEvent == nullptr ? TEXT("Invalid") : CustomEvent->GetEditorDisplayString(OwnerDialogue, ParticipantName);
+
+		case EDlgEventType::UnrealFunction:
+			return TargetPreFix + TEXT("Call Function ") + EventName.ToString();
+
+		default:
+			return TEXT("TODO");
 	}
 }
 
@@ -104,4 +172,24 @@ FString FDlgEvent::EventTypeToString(EDlgEventType Type)
 	FString EnumValue;
 	FDlgHelper::ConvertEnumToString<EDlgEventType>(TEXT("EDlgEventType"), Type, false, EnumValue);
 	return EnumValue;
+}
+
+void FDlgEvent::CallUnrealFunction(UDlgContext& Context, const FString& ContextString, UObject* Participant) const
+{
+	if (!IsValid(Participant))
+	{
+		return;
+	}
+
+	if (UFunction* Function = Participant->FindFunction(EventName))
+	{
+		Participant->ProcessEvent(Function, nullptr);
+	}
+	else
+	{
+		FDlgLogger::Get().Warningf(
+			TEXT("Unreal Function %s Not Found. Ignoring. Context:\n\t%s, Participant = %s"),
+			*EventName.ToString(), *Context.GetContextString(), Participant ? *Participant->GetPathName() : TEXT("INVALID")
+		);
+	}
 }

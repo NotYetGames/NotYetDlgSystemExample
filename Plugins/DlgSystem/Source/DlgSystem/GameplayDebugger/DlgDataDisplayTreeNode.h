@@ -12,6 +12,7 @@ enum class EDlgDataDisplayVariableTreeNodeType : uint8
 	Default = 0,
 
 	Event,
+	UnrealFunction,
 	Condition,
 
 	Integer,
@@ -67,7 +68,7 @@ public:
 	virtual bool IsSeparator() const { return false; }
 
 	/** Is this equal with Other? */
-	virtual bool IsEqual(const Self& Other)
+	virtual bool IsEqual(const Self& Other) const
 	{
 		return TextType == Other.GetTextType() &&
 			CategoryType == Other.GetCategoryType() &&
@@ -75,7 +76,7 @@ public:
 			GetParentActor() == Other.GetParentActor();
 	}
 
-	bool operator==(const Self& Other)
+	bool operator==(const Self& Other) const
 	{
 		return IsEqual(Other);
 	}
@@ -184,7 +185,7 @@ public:
 	// VariableType:
 	EDlgDataDisplayVariableTreeNodeType GetVariableType() const { return VariableType; }
 
-	bool IsEqual(const Super& Other) override
+	bool IsEqual(const Super& Other) const override
 	{
 		if (const Self* OtherSelf = static_cast<const Self*>(&Other))
 		{

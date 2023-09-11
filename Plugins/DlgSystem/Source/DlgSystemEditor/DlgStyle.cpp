@@ -41,6 +41,12 @@ const FName FDlgStyle::PROPERTY_QuestionMarkIcon(TEXT("DlgSystemEditor.QuestionM
 // Tied with FDlgCommands::DialogueReloadData
 const FName FDlgStyle::PROPERTY_ReloadAssetIcon(TEXT("DlgSystemEditor.DialogueReloadData"));
 
+// Tied with FDlgCommands::ToggleShowEdgeText
+const FName FDlgStyle::PROPERTY_ShowEdgeTextIcon(TEXT("DlgSystemEditor.ToggleShowEdgeText"));
+
+// Tied with FDlgCommands::ToggleShowEventsAndConditons
+const FName FDlgStyle::PROPERTY_ShowEventsAndConditionsIcon(TEXT("DlgSystemEditor.ToggleShowEventsAndConditions"));
+
 // Tied with FDlgCommands::ToggleShowPrimarySecondaryEdges
 const FName FDlgStyle::PROPERTY_ShowPrimarySecondaryEdgesIcon(TEXT("DlgSystemEditor.ToggleShowPrimarySecondaryEdges"));
 
@@ -243,12 +249,30 @@ void FDlgStyle::Initialize()
 	);
 
 	StyleSet->Set(
+		PROPERTY_ShowEdgeTextIcon,
+		new FSlateImageBrush(GetEngineContentPath("Icons/icon_FontEd_Update_40x.png"), Icon40x40)
+	);
+	StyleSet->Set(
+		GetSmallProperty(PROPERTY_ShowEdgeTextIcon),
+		new FSlateImageBrush(GetEngineContentPath("Icons/icon_FontEd_Update_40x.png"), Icon16x16)
+	);
+
+	StyleSet->Set(
 		PROPERTY_ShowPrimarySecondaryEdgesIcon,
 		new FSlateImageBrush(GetPluginContentPath("Icons/Dialogue_ShowPrimarySecondaryEdges_40x.png"), Icon40x40)
 	);
 	StyleSet->Set(
 		GetSmallProperty(PROPERTY_ShowPrimarySecondaryEdgesIcon),
 		new FSlateImageBrush(GetPluginContentPath("Icons/Dialogue_ShowPrimarySecondaryEdges_40x.png"), Icon16x16)
+	);
+
+	StyleSet->Set(
+		PROPERTY_ShowEventsAndConditionsIcon,
+		new FSlateImageBrush(GetEngineContentPath("Icons/icon_FontEd_Background_40x.png"), Icon40x40)
+	);
+	StyleSet->Set(
+		GetSmallProperty(PROPERTY_ShowEventsAndConditionsIcon),
+		new FSlateImageBrush(GetEngineContentPath("Icons/icon_FontEd_Background_40x.png"), Icon16x16)
 	);
 
 	// Custom Icon sizes, original image is 128x64, we divide by 1.4
