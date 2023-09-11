@@ -71,6 +71,8 @@ public:
 	/** Gets the transition color of this node and wire. */
 	FSlateColor GetTransitionColor() const { return DialogueGraphNode_Edge->GetEdgeColor(IsHovered()); }
 
+	virtual const TArray<FDlgCondition>* GetEnterConditions() const override;
+
 	// End own functions
 
 protected:
@@ -79,6 +81,11 @@ protected:
 
 	/** Get the visibility of the overlay widgets. */
 	EVisibility GetOverlayWidgetVisibility() const;
+
+	// Edge text visualization:
+	FText GetEdgeText() const;
+	EVisibility GetEdgeTextVisibility() const;
+	EVisibility GetEdgeIconVisibility() const;
 
 	/** Get the background color to display for the widget overlay. This changes on hover state of sibling nodes */
 	FSlateColor GetOverlayWidgetBackgroundColor(bool bHovered) const

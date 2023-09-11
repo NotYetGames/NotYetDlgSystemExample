@@ -137,6 +137,8 @@ void SDlgGraphNode_Edge::UpdateGraphNode()
 		SetToolTip(DefaultToolTip);
 	}
 
+	TSharedPtr<SVerticalBox> EdgeTextVerticalBox;
+
 	ContentScale.Bind(this, &Super::GetContentScale);
 	GetOrAddSlot(ENodeZone::Center)
 		.HAlign(HAlign_Center)
@@ -151,11 +153,25 @@ void SDlgGraphNode_Edge::UpdateGraphNode()
 				SNew(SImage)
 				.Image(FNYAppStyle::GetBrush("Graph.TransitionNode.ColorSpill"))
 				.ColorAndOpacity(this, &Self::GetTransitionColor)
+				.Visibility(this, &Self::GetEdgeIconVisibility)
 			]
 			+SOverlay::Slot()
 			[
 				SNew(SImage)
 				.Image(FNYAppStyle::GetBrush("Graph.TransitionNode.Icon"))
+				.Visibility(this, &Self::GetEdgeIconVisibility)
+			]
+			+SOverlay::Slot()
+			[
+				SNew(SBorder)
+				.BorderImage(FNYAppStyle::GetBrush("BTEditor.Graph.BTNode.Body"))
+				.BorderBackgroundColor(Settings->GraphEdgeTextBackgroundColor)
+				.HAlign(HAlign_Fill)
+				.VAlign(VAlign_Fill)
+				.Visibility(this, &Self::GetEdgeTextVisibility)
+				[
+					SAssignNew(EdgeTextVerticalBox, SVerticalBox)
+				]
 			]
 #else
 			+SOverlay::Slot()
@@ -181,7 +197,19 @@ void SDlgGraphNode_Edge::UpdateGraphNode()
 			]
 #endif // NY_ENGINE_VERSION >= 424
 		];
+
+	CreateEventAndConditionWidgets(EdgeTextVerticalBox);
+
+	EdgeTextVerticalBox->AddSlot()
+	[
+		SNew(STextBlock)
+		.ColorAndOpacity(Settings->GraphEdgeTextColor)
+		.Text(this, &Self::GetEdgeText)
+		.WrapTextAt(Settings->GraphEdgeTextWrapAt)
+		.Margin(Settings->GraphEdgeTextMargin)
+	];
 }
+
 //  End SGraphNode Interface
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -232,9 +260,40 @@ void SDlgGraphNode_Edge::PositionBetweenTwoNodesWithOffset(const FGeometry& Star
 	GraphNode->NodePosY = NewCorner.Y;
 }
 
+
+const TArray<FDlgCondition>* SDlgGraphNode_Edge::GetEnterConditions() const
+{
+	return &DialogueGraphNode_Edge->GetDialogueEdge().Conditions;
+}
+
+
 FText SDlgGraphNode_Edge::GetConditionOverlayTooltipText() const
 {
 	return LOCTEXT("NodeConditionTooltip", "Edge has conditions.\nOnly if these conditions are satisfied then this edge is considered as an option.");
+}
+
+FText SDlgGraphNode_Edge::GetEdgeText() const
+{
+	if (DialogueGraphNode_Edge != nullptr)
+	{
+		const FText EdgeText = DialogueGraphNode_Edge->GetDialogueEdge().GetText();
+		if (Settings->GraphEdgeTextCharLimit <= 0)
+		{
+			return EdgeText;
+		}
+
+		FString AsString = EdgeText.ToString();
+		if (AsString.Len() <= Settings->GraphEdgeTextCharLimit)
+		{
+			return EdgeText;
+		}
+
+		AsString.LeftChopInline(AsString.Len() - Settings->GraphEdgeTextCharLimit + 3);
+		AsString.Append(TEXT("..."));
+		return FText::FromString(AsString);
+	}
+
+	return FText::GetEmpty();
 }
 
 EVisibility SDlgGraphNode_Edge::GetOverlayWidgetVisibility() const
@@ -242,6 +301,18 @@ EVisibility SDlgGraphNode_Edge::GetOverlayWidgetVisibility() const
 	// LOD this out once things get too small
 	TSharedPtr<SGraphPanel> MyOwnerPanel = GetOwnerPanel();
 	return !MyOwnerPanel.IsValid() || MyOwnerPanel->GetCurrentLOD() > EGraphRenderingLOD::LowDetail ? EVisibility::Visible : EVisibility::Collapsed;
+}
+
+EVisibility SDlgGraphNode_Edge::GetEdgeTextVisibility() const
+{
+	const bool bVisible = Settings->bShowEdgeText && !DialogueGraphNode_Edge->GetDialogueEdge().GetUnformattedText().IsEmpty();
+	return bVisible ? EVisibility::Visible : EVisibility::Collapsed;
+}
+
+EVisibility SDlgGraphNode_Edge::GetEdgeIconVisibility() const
+{
+	const bool bTextVisible = Settings->bShowEdgeText && !DialogueGraphNode_Edge->GetDialogueEdge().GetUnformattedText().IsEmpty();
+	return bTextVisible ? EVisibility::Collapsed : EVisibility::Visible;
 }
 
 // End own functions

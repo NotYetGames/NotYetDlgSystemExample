@@ -28,6 +28,9 @@ public:
 	// Reloads the dialogue data from the .dlg text file that match the name of this dialogue
 	TSharedPtr<FUICommandInfo> DialogueReloadData;
 
+	// Draw edge texts
+	TSharedPtr<FUICommandInfo> ToggleShowEdgeText;
+
 	// Shows the primary/secondary edges
 	TSharedPtr<FUICommandInfo> ToggleShowPrimarySecondaryEdges;
 
@@ -36,6 +39,9 @@ public:
 
 	// Draw the secondary edges
 	TSharedPtr<FUICommandInfo> ToggleDrawSecondaryEdges;
+
+	// Draw events and conditions
+	TSharedPtr<FUICommandInfo> ToggleShowEventsAndConditions;
 
 	// Converts a speech sequence node to a list of speech node
 	TSharedPtr<FUICommandInfo> ConvertSpeechSequenceNodeToSpeechNodes;
